@@ -25,7 +25,7 @@
                 </div>
 
                 <!-- Login Form -->
-                <form id="loginForm" class="login-form" novalidate>
+                <form id="loginForm" class="login-form" action="api/action/login/login.php" method="POST" novalidate>
                     <!-- Email Field -->
                     <div class="form-group">
                         <div class="input-wrapper">
@@ -106,5 +106,39 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="frontend/js/login.js"></script>
+    <script>
+        // Handle URL parameters for success/error messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+        
+        if (success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: success,
+                confirmButtonColor: '#4c8a89',
+                confirmButtonText: 'OK',
+                timer: 3000,
+                timerProgressBar: true
+            });
+            
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        if (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error,
+                confirmButtonColor: '#4c8a89',
+                confirmButtonText: 'OK'
+            });
+            
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    </script>
 </body>
 </html>
