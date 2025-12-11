@@ -430,7 +430,7 @@
     }
 
     .login-logo {
-        width: 80px;
+        width: auto;
         height: 80px;
     }
 
@@ -473,7 +473,7 @@
     }
 
     .login-logo {
-        width: 70px;
+        width: auto;
         height: 70px;
         margin-bottom: 1rem;
     }

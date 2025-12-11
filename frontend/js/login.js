@@ -197,72 +197,9 @@ loginForm.addEventListener('submit', async (e) => {
     // Show loading states
     showButtonLoading();
 
-    // Simulate API call (replace with actual API call later)
-    try {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // For demo purposes - simulate login failure
-        // In production, you would make an actual API call here
-        const loginSuccess = simulateLogin(email, password);
-
-        if (loginSuccess) {
-            // Show success (optional full-page loading)
-            showLoadingOverlay('Login successful! Redirecting...');
-
-            // Store remember me preference
-            if (rememberMe) {
-                localStorage.setItem('rememberMe', 'true');
-                localStorage.setItem('userEmail', email);
-            } else {
-                localStorage.removeItem('rememberMe');
-                localStorage.removeItem('userEmail');
-            }
-
-            // Redirect after 1 second
-            setTimeout(() => {
-                // window.location.href = 'dashboard.php';
-                console.log('Redirecting to dashboard...');
-                hideLoadingOverlay();
-                alert('Login successful! (Static demo - no database)');
-                hideButtonLoading();
-            }, 1000);
-        } else {
-            throw new Error('Invalid email or password');
-        }
-
-    } catch (error) {
-        hideButtonLoading();
-        showFormError(error.message || 'Login failed. Please try again.');
-
-        // Shake animation for error
-        loginForm.style.animation = 'shake 0.5s';
-        setTimeout(() => {
-            loginForm.style.animation = '';
-        }, 500);
-    }
+    // Let the form submit naturally to login.php
+    loginForm.submit();
 });
-
-// ===================================
-// SIMULATE LOGIN (FOR DEMO)
-// ===================================
-
-/**
- * Simulate login validation
- * In production, replace this with actual API call
- */
-function simulateLogin(email, password) {
-    // Demo credentials (remove in production)
-    const demoCredentials = [
-        { email: 'admin@example.com', password: 'password123' },
-        { email: 'user@example.com', password: 'user123' },
-        { email: 'demo@example.com', password: 'demo123' }
-    ];
-
-    return demoCredentials.some(
-        cred => cred.email === email && cred.password === password
-    );
-}
 
 // ===================================
 // FORGOT PASSWORD HANDLER
@@ -345,14 +282,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Focus email input on load
     emailInput.focus();
 
-    // Console info for demo
+    // Console info
     console.log('='.repeat(50));
-    console.log('Crime Data Analytics - Login Page (Static Demo)');
-    console.log('='.repeat(50));
-    console.log('Demo Credentials:');
-    console.log('1. admin@example.com / password123');
-    console.log('2. user@example.com / user123');
-    console.log('3. demo@example.com / demo123');
+    console.log('Crime Data Analytics - Login Page');
     console.log('='.repeat(50));
     console.log('Keyboard Shortcuts:');
     console.log('Ctrl + Enter: Submit form');
