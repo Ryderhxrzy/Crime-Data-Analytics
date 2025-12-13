@@ -11,7 +11,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
         $_SESSION['last_activity'] = time();
 
         // Redirect to dashboard (change this to your dashboard page)
-        header('Location: dashboard.php');
+        header('Location: frontend/admin-page/dashboard.php');
         exit;
     }
 }
