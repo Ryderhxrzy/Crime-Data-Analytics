@@ -34,7 +34,7 @@
 (async function () {
     try {
         // API Endpoint
-        const apiUrl = 'https://crime.alertara.com/api/endpoint/sample.php';
+        const apiUrl = 'https://crime.alertaraqc.com/api/endpoint/sample.php';
 
         // Request API
         const response = await fetch(apiUrl);
