@@ -1,3 +1,29 @@
+<?php
+// Start session
+session_start();
+
+// Check if user is already logged in
+if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
+    // Check if session is still valid (not expired)
+    $session_timeout = 3600; // 1 hour
+    if ((time() - $_SESSION['last_activity']) <= $session_timeout) {
+        // Update last activity
+        $_SESSION['last_activity'] = time();
+
+        // Redirect to dashboard (change this to your dashboard page)
+        header('Location: dashboard.php');
+        exit;
+    }
+}
+
+// Get flash messages from session
+$flash_error = $_SESSION['flash_error'] ?? null;
+$flash_success = $_SESSION['flash_success'] ?? null;
+
+// Clear flash messages
+unset($_SESSION['flash_error']);
+unset($_SESSION['flash_success']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +34,7 @@
     <link rel="stylesheet" href="frontend/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="icon" type="image/x-icon" href="frontend/image/favicon.ico">
 </head>
 <body>
     <!-- Login Container -->
@@ -111,7 +138,28 @@
         const urlParams = new URLSearchParams(window.location.search);
         const success = urlParams.get('success');
         const error = urlParams.get('error');
-        
+
+        // Handle flash messages from PHP session
+        <?php if ($flash_success): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: <?php echo json_encode($flash_success); ?>,
+            confirmButtonColor: '#4c8a89',
+            confirmButtonText: 'OK',
+            timer: 3000,
+            timerProgressBar: true
+        });
+        <?php elseif ($flash_error): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: <?php echo json_encode($flash_error); ?>,
+            confirmButtonColor: '#4c8a89',
+            confirmButtonText: 'OK'
+        });
+        <?php endif; ?>
+
         if (success) {
             Swal.fire({
                 icon: 'success',
@@ -122,11 +170,11 @@
                 timer: 3000,
                 timerProgressBar: true
             });
-            
+
             // Clear URL parameters
             window.history.replaceState({}, document.title, window.location.pathname);
         }
-        
+
         if (error) {
             Swal.fire({
                 icon: 'error',
@@ -135,7 +183,7 @@
                 confirmButtonColor: '#4c8a89',
                 confirmButtonText: 'OK'
             });
-            
+
             // Clear URL parameters
             window.history.replaceState({}, document.title, window.location.pathname);
         }
