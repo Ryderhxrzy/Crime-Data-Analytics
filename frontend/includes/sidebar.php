@@ -1,14 +1,15 @@
 <?php
 /**
  * Reusable Sidebar Component
- * Include this file in your pages where you want a sidebar: <?php include 'sidebar/sidebar.php'; ?>
- * 
+ * Include this file in your pages where you want a sidebar: <?php include 'frontend/includes/sidebar.php'; ?>
+ *
  * Features:
  * - Responsive design with mobile toggle
  * - Admin-style navigation
  * - Collapsible sections
  * - Dark mode support
- * - Multiple layout options
+ * - Icon-based navigation
+ * - Active state management
  */
 ?>
 
@@ -17,128 +18,246 @@
     <div class="sidebar-header">
         <div class="sidebar-brand">
             <div class="brand-logo">
-                <img src="images/logo.svg" alt="" class="logo-img">
+                <img src="../image/logo.svg" alt="Crime Data Analytics Logo" class="logo-img">
             </div>
         </div>
     </div>
-    
+
     <div class="sidebar-content">
         <!-- Navigation Menu -->
         <nav class="sidebar-nav">
-            <!-- Components Section -->
+            <!-- Dashboard Section -->
             <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Components</h3>
+                <h3 class="sidebar-section-title">Admin Dashboard</h3>
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="buttons.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'buttons.php' ? 'active' : ''; ?>">
-                            <span>Buttons</span>
-                        </a>
-                    </li>
-                    
-                    <li class="sidebar-menu-item">
-                        <a href="forms.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'forms.php' ? 'active' : ''; ?>">
-                            <span>Forms</span>
-                        </a>
-                    </li>
-                    
-                    <li class="sidebar-menu-item">
-                        <a href="textfields.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'textfields.php' ? 'active' : ''; ?>">
-                            <span>Text Fields</span>
-                        </a>
-                    </li>
-                    
-                    <li class="sidebar-menu-item">
-                        <a href="datatables.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'datatables.php' ? 'active' : ''; ?>">
-                            <span>Data Tables</span>
-                        </a>
-                    </li>
-                    
-                    <li class="sidebar-menu-item">
-                        <a href="content.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'content.php' ? 'active' : ''; ?>">
-                            <span>Content</span>
-                        </a>
-                    </li>
-                    
-                    <li class="sidebar-menu-item">
-                        <a href="cards.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'cards.php' ? 'active' : ''; ?>">
-                            <span>Cards</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Admin Section -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Admin</h3>
-                <ul class="sidebar-menu">
-                    <li class="sidebar-menu-item">
-                        <a href="../admin-dashboard.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'admin-dashboard.php' ? 'active' : ''; ?>">
+                        <a href="dashboard.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    
                     <li class="sidebar-menu-item">
-                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
-                            <span>Users</span>
-                            <i class="fas fa-chevron-down submenu-icon"></i>
+                        <a href="analytics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Analytics Overview</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="users.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'users.php' ? 'active' : ''; ?>">
-                                    <span>All Users</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="user-roles.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'user-roles.php' ? 'active' : ''; ?>">
-                                    <span>Roles</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="user-permissions.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'user-permissions.php' ? 'active' : ''; ?>">
-                                    <span>Permissions</span>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
-                    
+                </ul>
+            </div>
+
+            <!-- Crime Data Section -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Crime Analysis</h3>
+                <ul class="sidebar-menu">
+                    <!-- Crime Mapping & Visualization -->
                     <li class="sidebar-menu-item">
                         <a href="#" class="sidebar-link sidebar-submenu-toggle">
-                            <span>Settings</span>
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>Mapping</span>
                             <i class="fas fa-chevron-down submenu-icon"></i>
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="general-settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'general-settings.php' ? 'active' : ''; ?>">
-                                    <span>General</span>
+                                <a href="crime-mapping.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-mapping.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-map"></i>
+                                    <span>Crime Mapping</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="security-settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'security-settings.php' ? 'active' : ''; ?>">
-                                    <span>Security</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="appearance-settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'appearance-settings.php' ? 'active' : ''; ?>">
-                                    <span>Appearance</span>
+                                <a href="heatmaps.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'heatmaps.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-fire"></i>
+                                    <span>Heatmaps</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
                 </ul>
             </div>
-            
-            <!-- Actions Section -->
+
             <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Actions</h3>
+                <h3 class="sidebar-section-title">Trend Analysis</h3>
+                <!-- Trend Analysis -->
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="../login.php" class="sidebar-link">
-                            <span>Login</span>
+                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
+                            <i class="fas fa-chart-area"></i>
+                            <span>Trend Analytics</span>
+                            <i class="fas fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="time-trends.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'time-trends.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Time-Based Trends</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="location-trends.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'location-trends.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-map-pin"></i>
+                                    <span>Location Trends</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="crime-type-trends.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-type-trends.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>Crime Type Trends</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Predictive Policing</h3>
+                <ul class="sidebar-menu">
+                    <!-- Predictive Policing -->
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
+                            <i class="fas fa-brain"></i>
+                            <span>Predictive Analytics</span>
+                            <i class="fas fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="hotspot-prediction.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'hotspot-prediction.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-crosshairs"></i>
+                                    <span>Crime Hotspots</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="risk-forecasting.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'risk-forecasting.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Risk Forecasting</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="pattern-detection.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'pattern-detection.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-project-diagram"></i>
+                                    <span>Pattern Detection</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Key Metrics Dashboard</h3>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Key Metrics</span>
+                            <i class="fas fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="crime-rate-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-rate-metrics.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-percentage"></i>
+                                    <span>Crime Rates</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="clearance-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'clearance-metrics.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Clearance Rates</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="response-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'response-metrics.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-stopwatch"></i>
+                                    <span>Response Times</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Reports & Alerts</h3>
+                <ul class="sidebar-menu">
+                    <!-- Reports -->
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Reports</span>
+                            <i class="fas fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="report-builder.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'report-builder.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-tools"></i>
+                                    <span>Report Builder</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="report-history.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'report-history.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-history"></i>
+                                    <span>Report History</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="scheduled-reports.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'scheduled-reports.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Scheduled Reports</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Automated Alerts -->
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
+                            <i class="fas fa-bell"></i>
+                            <span>Alerts</span>
+                            <i class="fas fa-chevron-down submenu-icon"></i>
+                        </a>
+                        <ul class="sidebar-submenu">
+                            <li>
+                                <a href="crime-alerts.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-alerts.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-bullhorn"></i>
+                                    <span>Crime Cluster Alerts</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="risk-notifications.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'risk-notifications.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>High-Risk Notifications</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="alert-settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'alert-settings.php' ? 'active' : ''; ?>">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Alert Settings</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Account Section -->
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Account</h3>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="profile.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
                         </a>
                     </li>
-                    
                     <li class="sidebar-menu-item">
-                        <a href="../logout.php" class="sidebar-link">
+                        <a href="settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="api/action/logout.php" class="sidebar-link">
+                            <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>
                     </li>
@@ -156,14 +275,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sidebar functionality
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
-    
+
     // Toggle sidebar
     function toggleSidebar() {
         sidebar.classList.toggle('sidebar-open');
         sidebarOverlay.classList.toggle('sidebar-overlay-open');
         document.body.classList.toggle('sidebar-open');
     }
-    
+
     // Close sidebar
     function closeSidebar() {
         sidebar.classList.remove('sidebar-open');
@@ -175,63 +294,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // can trigger the sidebar without duplicating logic.
     window.sidebarToggle = toggleSidebar;
     window.sidebarClose = closeSidebar;
-    
+
     // Close sidebar when clicking overlay
     if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', closeSidebar);
     }
-    
+
     // Close sidebar on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
             closeSidebar();
         }
     });
-    
+
     // Handle submenu toggles
     const submenuToggles = document.querySelectorAll('.sidebar-submenu-toggle');
     submenuToggles.forEach(toggle => {
         toggle.addEventListener('click', function(e) {
             e.preventDefault();
+
+            // Close other open submenus (optional - for accordion behavior)
+            const parentSection = this.closest('.sidebar-section');
+            const allToggles = parentSection.querySelectorAll('.sidebar-submenu-toggle');
+            allToggles.forEach(otherToggle => {
+                if (otherToggle !== this) {
+                    const otherSubmenu = otherToggle.nextElementSibling;
+                    if (otherSubmenu && otherSubmenu.classList.contains('sidebar-submenu-open')) {
+                        otherSubmenu.classList.remove('sidebar-submenu-open');
+                        otherToggle.classList.remove('active');
+                    }
+                }
+            });
+
             const submenu = this.nextElementSibling;
-            const icon = this.querySelector('.submenu-icon');
-            
+
             if (submenu) {
                 const isOpen = submenu.classList.contains('sidebar-submenu-open');
                 submenu.classList.toggle('sidebar-submenu-open');
                 this.classList.toggle('active', !isOpen);
-                
-                // Toggle icon based on new state
-                if (icon) {
-                    if (submenu.classList.contains('sidebar-submenu-open')) {
-                        // Now open - show up chevron
-                        icon.classList.remove('fa-chevron-down');
-                        icon.classList.add('fa-chevron-up');
-                    } else {
-                        // Now closed - show down chevron
-                        icon.classList.remove('fa-chevron-up');
-                        icon.classList.add('fa-chevron-down');
-                    }
-                }
             }
         });
     });
-    
+
     // Auto-open submenu if it contains active item
     const activeLinks = document.querySelectorAll('.sidebar-submenu .sidebar-link.active');
     activeLinks.forEach(activeLink => {
         const submenu = activeLink.closest('.sidebar-submenu');
         const toggle = submenu ? submenu.previousElementSibling : null;
-        
+
         if (submenu && toggle && toggle.classList.contains('sidebar-submenu-toggle')) {
             submenu.classList.add('sidebar-submenu-open');
             toggle.classList.add('active');
-            
-            const icon = toggle.querySelector('.submenu-icon');
-            if (icon) {
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            }
         }
     });
 });
