@@ -251,6 +251,10 @@
     position: relative;
 }
 
+.sidebar-submenu li {
+    padding: 0.10rem;
+}
+
 .sidebar-submenu .sidebar-link {
     background-color: transparent;
 }
