@@ -1,0 +1,593 @@
+/* ===================================
+   ANALYTICS SUMMARY - DASHBOARD STYLES
+   =================================== */
+
+/* Analytics Grid Layout */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Chart Grid Layouts */
+.chart-grid-single {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-grid-double {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Chart Canvas Container */
+.chart-canvas-container {
+    position: relative;
+    height: 400px;
+    margin-bottom: 1rem;
+}
+
+.chart-canvas-container.medium {
+    height: 350px;
+}
+
+/* Chart Footer Text */
+.chart-footer-text {
+    font-size: 0.9375rem;
+    color: var(--text-secondary-1);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Trend Section Header Spacing */
+.trend-section .chart-header {
+    margin-bottom: 1.5rem;
+}
+
+/* Chart Card */
+.chart-card {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.chart-card:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color-1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+}
+
+.chart-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+/* Chart Container Styles */
+.mini-chart-container {
+    position: relative;
+    height: 350px;
+    margin-bottom: 1rem;
+}
+
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 100%;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.bar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bar {
+    width: 100%;
+    background: linear-gradient(to top, var(--primary-color-1), rgba(76, 138, 137, 0.6));
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+    position: relative;
+    min-height: 20px;
+}
+
+.bar:hover {
+    background: linear-gradient(to top, #4ca8a6, var(--primary-color-1));
+    transform: scaleY(1.05);
+}
+
+.bar-value {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    white-space: nowrap;
+    background: var(--card-bg-1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.bar-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    text-align: center;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+/* Line Chart */
+.line-chart {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.line-chart-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.line-path {
+    fill: none;
+    stroke: var(--primary-color-1);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.line-area {
+    fill: url(#gradient);
+    opacity: 0.2;
+}
+
+.line-point {
+    fill: var(--primary-color-1);
+    stroke: var(--card-bg-1);
+    stroke-width: 2;
+}
+
+.line-point:hover {
+    r: 6;
+    fill: #4ca8a6;
+}
+
+/* Top Crime Types List */
+.crime-types-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.crime-type-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.crime-type-item:hover {
+    border-color: var(--primary-color-1);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+.crime-rank {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.crime-rank.rank-1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+}
+
+.crime-rank.rank-2 {
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    color: white;
+}
+
+.crime-rank.rank-3 {
+    background: linear-gradient(135deg, #cd7f32, #8b5a2b);
+    color: white;
+}
+
+.crime-type-info {
+    flex: 1;
+}
+
+.crime-type-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.25rem;
+}
+
+.crime-type-description {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+}
+
+.crime-type-stats {
+    text-align: right;
+}
+
+.crime-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color-1);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.crime-percentage {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+}
+
+/* Barangay List */
+.barangay-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.barangay-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-color-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.barangay-item:hover {
+    background: var(--card-bg-1);
+    border-color: var(--primary-color-1);
+    transform: translateX(4px);
+}
+
+.barangay-position {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+    flex-shrink: 0;
+}
+
+.barangay-details {
+    flex: 1;
+}
+
+.barangay-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.25rem;
+}
+
+.barangay-location {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.barangay-count {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--error-color);
+}
+
+/* High Risk Areas */
+.risk-areas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.risk-area-card {
+    border-left: 4px solid;
+    background: var(--card-bg-1);
+    border-top: 1px solid var(--border-color-1);
+    border-right: 1px solid var(--border-color-1);
+    border-bottom: 1px solid var(--border-color-1);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.risk-area-card:hover {
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+}
+
+.risk-area-card.high-risk {
+    border-left-color: var(--error-color);
+    background: var(--error-bg);
+}
+
+.risk-area-card.medium-risk {
+    border-left-color: #f59e0b;
+    background: rgba(251, 191, 36, 0.05);
+}
+
+.risk-area-card.low-risk {
+    border-left-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.risk-area-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.risk-area-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+}
+
+.risk-badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.risk-badge.high {
+    background: var(--error-color);
+    color: white;
+}
+
+.risk-badge.medium {
+    background: #f59e0b;
+    color: white;
+}
+
+.risk-badge.low {
+    background: #3b82f6;
+    color: white;
+}
+
+.risk-area-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.risk-stat {
+    text-align: center;
+}
+
+.risk-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.risk-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary-1);
+}
+
+.risk-area-factors {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+/* Trend Indicators */
+.trend-section {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.trend-indicators {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.trend-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-color-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.trend-item:hover {
+    border-color: var(--primary-color-1);
+    box-shadow: var(--shadow-sm);
+}
+
+.trend-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.trend-icon-wrapper.up {
+    background: var(--error-bg);
+    color: var(--error-color);
+}
+
+.trend-icon-wrapper.down {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+.trend-icon-wrapper.stable {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.trend-content {
+    flex: 1;
+}
+
+.trend-label {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+    margin-bottom: 0.25rem;
+}
+
+.trend-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.trend-change {
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.trend-change.up {
+    color: var(--error-color);
+}
+
+.trend-change.down {
+    color: var(--success-color);
+}
+
+.trend-change.stable {
+    color: #3b82f6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-grid-single {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-grid-double {
+        grid-template-columns: 1fr;
+    }
+
+    .risk-areas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .trend-indicators {
+        grid-template-columns: 1fr;
+    }
+
+    .crime-type-item {
+        flex-direction: row;
+    }
+
+    .risk-area-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-card {
+        padding: 1rem;
+    }
+
+    .mini-chart-container {
+        height: 160px;
+    }
+
+    .crime-rank {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .crime-count {
+        font-size: 1.25rem;
+    }
+
+    .barangay-count {
+        font-size: 1rem;
+    }
+}
