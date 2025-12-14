@@ -1,0 +1,440 @@
+/* ===================================
+   SYSTEM OVERVIEW - DASHBOARD STYLES
+   =================================== */
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Stats Cards */
+.stat-card {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color-1);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-card-icon.primary {
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+.stat-card-icon.danger {
+    background: var(--error-bg);
+    color: var(--error-color);
+}
+
+.stat-card-icon.success {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+.stat-card-icon.warning {
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+}
+
+.stat-card-info {
+    flex: 1;
+    text-align: right;
+}
+
+.stat-card-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    line-height: 1.2;
+}
+
+.stat-card-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color-1);
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+}
+
+.stat-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.stat-trend.up {
+    background: var(--error-bg);
+    color: var(--error-color);
+}
+
+.stat-trend.down {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+/* Time Period Tabs */
+.time-period-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.time-tab {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color-1);
+    background: var(--card-bg-1);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary-1);
+    transition: all 0.2s ease;
+}
+
+.time-tab:hover {
+    border-color: var(--primary-color-1);
+    color: var(--primary-color-1);
+}
+
+.time-tab.active {
+    background: var(--primary-color-1);
+    color: white;
+    border-color: var(--primary-color-1);
+}
+
+/* Recent Incidents Section */
+.incidents-section {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+}
+
+.view-all-btn {
+    font-size: 0.875rem;
+    color: var(--primary-color-1);
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.view-all-btn:hover {
+    gap: 0.75rem;
+}
+
+/* Incident Card */
+.incident-card {
+    border: 1px solid var(--border-color-1);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.incident-card:hover {
+    border-color: var(--primary-color-1);
+    box-shadow: var(--shadow-sm);
+}
+
+.incident-card:last-child {
+    margin-bottom: 0;
+}
+
+.incident-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.incident-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.incident-type.theft {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+}
+
+.incident-type.assault {
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+}
+
+.incident-type.vandalism {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.incident-type.fraud {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.incident-time {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+}
+
+.incident-description {
+    font-size: 0.9375rem;
+    color: var(--text-color-1);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.incident-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+}
+
+.incident-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.incident-meta-item i {
+    color: var(--primary-color-1);
+}
+
+/* Active Alerts Section */
+.alerts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.alert-card {
+    border-left: 4px solid;
+    background: var(--card-bg-1);
+    border-top: 1px solid var(--border-color-1);
+    border-right: 1px solid var(--border-color-1);
+    border-bottom: 1px solid var(--border-color-1);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.alert-card:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.alert-card.critical {
+    border-left-color: var(--error-color);
+    background: var(--error-bg);
+}
+
+.alert-card.high {
+    border-left-color: #f59e0b;
+    background: rgba(251, 191, 36, 0.05);
+}
+
+.alert-card.medium {
+    border-left-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.alert-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.5rem;
+}
+
+.alert-message {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.alert-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+}
+
+.alert-priority {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.alert-priority.critical {
+    background: var(--error-color);
+    color: white;
+}
+
+.alert-priority.high {
+    background: #f59e0b;
+    color: white;
+}
+
+.alert-priority.medium {
+    background: #3b82f6;
+    color: white;
+}
+
+.alert-time {
+    color: var(--text-secondary-1);
+}
+
+/* Quick Stats Grid */
+.quick-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.quick-stat-item {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.quick-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color-1);
+    margin-bottom: 0.25rem;
+}
+
+.quick-stat-label {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-card-value {
+        font-size: 1.75rem;
+    }
+
+    .time-period-tabs {
+        flex-wrap: wrap;
+    }
+
+    .alerts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .incident-header {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .incident-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-card-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .stat-card-value {
+        font-size: 1.5rem;
+    }
+
+    .quick-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .time-tab {
+        font-size: 0.8125rem;
+        padding: 0.375rem 0.75rem;
+    }
+}

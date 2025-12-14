@@ -31,15 +31,15 @@
                 <h3 class="sidebar-section-title">Admin Dashboard</h3>
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="dashboard.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
+                        <a href="system-overview.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'system-overview.php' ? 'active' : ''; ?>">
                             <i class="fas fa-home"></i>
-                            <span>Dashboard</span>
+                            <span>System Overview</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="analytics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics.php' ? 'active' : ''; ?>">
+                        <a href="analytics-summary.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics-summary.php' ? 'active' : ''; ?>">
                             <i class="fas fa-chart-line"></i>
-                            <span>Analytics Overview</span>
+                            <span>Analytics Summary</span>
                         </a>
                     </li>
                 </ul>
@@ -47,7 +47,7 @@
 
             <!-- Crime Data Section -->
             <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Crime Analysis</h3>
+                <h3 class="sidebar-section-title">Crime Summary</h3>
                 <ul class="sidebar-menu">
                     <!-- Crime Mapping & Visualization -->
                     <li class="sidebar-menu-item">
