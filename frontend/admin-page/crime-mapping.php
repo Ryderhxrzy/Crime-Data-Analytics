@@ -44,7 +44,6 @@
             
             <div class="sub-container">
                 <div class="page-content">
-                    <!-- Crime Statistics -->
                     <div class="dashboard-grid">
                         <!-- Total Crimes Card -->
                         <div class="stat-card">
