@@ -47,7 +47,7 @@
 
             <!-- Crime Data Section -->
             <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Crime Summary</h3>
+                <h3 class="sidebar-section-title">Crime Mapping & Heatmaps</h3>
                 <ul class="sidebar-menu">
                     <!-- Crime Mapping & Visualization -->
                     <li class="sidebar-menu-item">
@@ -86,19 +86,19 @@
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="time-trends.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'time-trends.php' ? 'active' : ''; ?>">
+                                <a href="timebased-trend.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'timebased-trend.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-clock"></i>
                                     <span>Time-Based Trends</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="location-trends.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'location-trends.php' ? 'active' : ''; ?>">
+                                <a href="location-trend.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'location-trend.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-map-pin"></i>
                                     <span>Location Trends</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="crime-type-trends.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-type-trends.php' ? 'active' : ''; ?>">
+                                <a href="crime-type-trend.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-type-trend.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-chart-bar"></i>
                                     <span>Crime Type Trends</span>
                                 </a>
@@ -109,7 +109,7 @@
             </div>
 
             <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Predictive Policing</h3>
+                <h3 class="sidebar-section-title">Predictive Policing Tools</h3>
                 <ul class="sidebar-menu">
                     <!-- Predictive Policing -->
                     <li class="sidebar-menu-item">
