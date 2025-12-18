@@ -1,0 +1,362 @@
+/* ===================================
+   LOCATION-BASED TRENDS - PAGE STYLES
+   =================================== */
+
+/* Chart Grid Layouts */
+.chart-grid-single {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-grid-double {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Chart Card */
+.chart-card {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.chart-card:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color-1);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+}
+
+.chart-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+/* Chart Canvas Container */
+.chart-canvas-container {
+    position: relative;
+    height: 400px;
+    margin-bottom: 1rem;
+}
+
+.chart-canvas-container.medium {
+    height: 350px;
+}
+
+.chart-canvas-container.large {
+    height: 500px;
+}
+
+/* Chart Footer Text */
+.chart-footer-text {
+    font-size: 0.9375rem;
+    color: var(--text-secondary-1);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Barangay Rankings */
+.barangay-rankings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-color-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.ranking-item:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+.ranking-item.rising {
+    border-left: 4px solid var(--error-color);
+}
+
+.ranking-item.declining {
+    border-left: 4px solid var(--success-color);
+}
+
+.ranking-item.stable {
+    border-left: 4px solid var(--text-secondary-1);
+}
+
+.ranking-position {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--primary-color-1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.ranking-details {
+    flex: 1;
+}
+
+.ranking-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.25rem;
+}
+
+.ranking-location {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.ranking-location i {
+    font-size: 0.75rem;
+}
+
+.ranking-stats {
+    text-align: right;
+}
+
+.ranking-count {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    margin-bottom: 0.25rem;
+}
+
+.ranking-change {
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+}
+
+.ranking-change.rising {
+    color: var(--error-color);
+}
+
+.ranking-change.declining {
+    color: var(--success-color);
+}
+
+.ranking-change.stable {
+    color: var(--text-secondary-1);
+}
+
+/* Location Insights */
+.location-insights {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.location-insights .chart-header {
+    margin-bottom: 1.5rem;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+.insight-card {
+    background: var(--bg-color-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.insight-card.alert {
+    border-left: 4px solid var(--error-color);
+}
+
+.insight-card.alert:hover {
+    border-color: var(--error-color);
+}
+
+.insight-card.success {
+    border-left: 4px solid var(--success-color);
+}
+
+.insight-card.success:hover {
+    border-color: var(--success-color);
+}
+
+.insight-card.warning {
+    border-left: 4px solid var(--warning-color);
+}
+
+.insight-card.warning:hover {
+    border-color: var(--warning-color);
+}
+
+.insight-card.info {
+    border-left: 4px solid var(--primary-color-1);
+}
+
+.insight-card.info:hover {
+    border-color: var(--primary-color-1);
+}
+
+.insight-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.insight-icon.alert {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--error-color);
+}
+
+.insight-icon.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.insight-icon.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.insight-icon.info {
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+.insight-content {
+    flex: 1;
+}
+
+.insight-content h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.5rem;
+}
+
+.insight-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--primary-color-1);
+    margin-bottom: 0.5rem;
+}
+
+.insight-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .chart-grid-double {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-canvas-container {
+        height: 300px;
+    }
+
+    .chart-canvas-container.medium {
+        height: 280px;
+    }
+
+    .chart-canvas-container.large {
+        height: 350px;
+    }
+
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-card {
+        padding: 1rem;
+    }
+
+    .chart-title {
+        font-size: 1rem;
+    }
+
+    .chart-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .ranking-item {
+        padding: 0.875rem;
+    }
+
+    .ranking-position {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .ranking-name {
+        font-size: 0.9375rem;
+    }
+
+    .ranking-count {
+        font-size: 1.125rem;
+    }
+}
