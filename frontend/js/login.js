@@ -15,6 +15,7 @@ const emailError = document.getElementById('emailError');
 const passwordError = document.getElementById('passwordError');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+const googleLoginButton = document.getElementById('googleLoginButton');
 
 // ===================================
 // PASSWORD TOGGLE
@@ -270,6 +271,20 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         loginForm.dispatchEvent(new Event('submit'));
     }
+});
+
+// ===================================
+// GOOGLE LOGIN HANDLER
+// ===================================
+
+googleLoginButton.addEventListener('click', () => {
+    // Disable button and show loading state
+    googleLoginButton.disabled = true;
+    const buttonText = googleLoginButton.querySelector('span');
+    buttonText.textContent = 'Redirecting to Google...';
+
+    // Redirect to Google OAuth login handler
+    window.location.href = 'api/auth/google/login.php';
 });
 
 // ===================================
