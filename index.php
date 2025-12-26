@@ -10,8 +10,8 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
         // Update last activity
         $_SESSION['last_activity'] = time();
 
-        // Redirect to dashboard (change this to your dashboard page)
-        header('Location: frontend/admin-page/dashboard.php');
+        // Redirect to system overview page
+        header('Location: frontend/admin-page/system-overview.php');
         exit;
     }
 }
