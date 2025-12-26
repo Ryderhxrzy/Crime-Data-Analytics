@@ -132,6 +132,16 @@ unset($_SESSION['flash_success']);
                         </svg>
                         <span>Sign in with Google</span>
                     </button>
+
+                    <!-- Legal Links -->
+                    <div class="legal-links">
+                        <p>By signing in, you agree to our</p>
+                        <div class="links">
+                            <a href="frontend/legal/terms-of-use.php" target="_blank">Terms of Use</a>
+                            <span>and</span>
+                            <a href="frontend/legal/privacy-policy.php" target="_blank">Privacy Policy</a>
+                        </div>
+                    </div>
                 </form>
             </div>
 
