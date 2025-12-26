@@ -8,7 +8,8 @@
 // Start session
 session_start();
 
-// Include the Google OAuth helper
+// Include required files
+require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/GoogleOAuth.php';
 
 try {
@@ -19,7 +20,7 @@ try {
     $authUrl = $googleOAuth->getAuthorizationUrl();
 
     // Redirect to Google OAuth
-    header('Location: ' . $authUrl);
+    header("Location: $authUrl");
     exit;
 
 } catch (Exception $e) {
@@ -28,6 +29,7 @@ try {
 
     // Redirect back to login with error
     $_SESSION['flash_error'] = 'Google login is not configured properly. Please contact the administrator.';
-    header('Location: ../../../index.php');
+    $loginUrl = getRedirectUrl('index.php');
+    header("Location: $loginUrl");
     exit;
 }

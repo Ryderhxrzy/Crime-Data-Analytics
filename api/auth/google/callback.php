@@ -9,6 +9,7 @@
 session_start();
 
 // Include required files
+require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/GoogleOAuth.php';
 require_once __DIR__ . '/../../config.php';
 
@@ -82,7 +83,8 @@ try {
         $_SESSION['last_activity'] = time();
 
         // Success - redirect to dashboard
-        header('Location: ../../../frontend/admin-page/dashboard.php');
+        $dashboardUrl = getRedirectUrl('frontend/admin-page/dashboard.php');
+        header("Location: $dashboardUrl");
         exit;
 
     } else {
@@ -118,7 +120,8 @@ try {
 
         // Success - redirect to dashboard
         $_SESSION['flash_success'] = 'Welcome! Your account has been created successfully.';
-        header('Location: ../../../frontend/admin-page/dashboard.php');
+        $dashboardUrl = getRedirectUrl('frontend/admin-page/dashboard.php');
+        header("Location: $dashboardUrl");
         exit;
     }
 
@@ -130,6 +133,7 @@ try {
     $_SESSION['flash_error'] = 'Google login failed: ' . $e->getMessage();
 
     // Redirect back to login page
-    header('Location: ../../../index.php');
+    $loginUrl = getRedirectUrl('index.php');
+    header("Location: $loginUrl");
     exit;
 }

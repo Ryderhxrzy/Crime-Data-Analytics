@@ -5,3 +5,8 @@ db.sql
 # Dependencies
 node_modules/
 vendor/
+
+DEPLOYMENT_CHECKLIST.md
+GOOGLE_OAUTH_SETUP.md
+IMPLEMENTATION_SUMMARY.md
+QUICK_REFERENCE.md
