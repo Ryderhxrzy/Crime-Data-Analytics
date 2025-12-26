@@ -52,8 +52,9 @@ try {
         throw new Exception('Email not provided by Google');
     }
 
+    // FOR TESTING: Allow all Google users to login
     // Check if user already exists in database
-    $stmt = $mysqli->prepare("SELECT id, email, full_name, role, status FROM admin_users WHERE email = ?");
+    $stmt = $mysqli->prepare("SELECT id, email, role, status FROM admin_users WHERE email = ?");
     $stmt->bind_param('s', $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -61,39 +62,30 @@ try {
     $stmt->close();
 
     if ($user) {
-        // User exists - check if account is active
-        if ($user['status'] !== 'active') {
-            throw new Exception('Your account is ' . $user['status'] . '. Please contact the administrator.');
-        }
-
-        // Update last login
+        // User exists - update last login
         $stmt = $mysqli->prepare("UPDATE admin_users SET last_login = NOW() WHERE id = ?");
         $stmt->bind_param('i', $user['id']);
         $stmt->execute();
         $stmt->close();
 
-        // Set session variables
+        // Set session with Google profile data
         $_SESSION['user'] = [
             'id' => $user['id'],
-            'email' => $user['email'],
-            'full_name' => $user['full_name'],
+            'email' => $email,
+            'full_name' => $fullName,  // Use name from Google
             'role' => $user['role'],
+            'profile_picture' => $profilePicture,  // Use picture from Google
             'login_method' => 'google'
         ];
         $_SESSION['last_activity'] = time();
 
-        // Success - redirect to dashboard
-        $dashboardUrl = getRedirectUrl('frontend/admin-page/dashboard.php');
-        header("Location: $dashboardUrl");
+        // Success - redirect to system overview
+        $systemOverviewUrl = getRedirectUrl('frontend/admin-page/system-overview.php');
+        header("Location: $systemOverviewUrl");
         exit;
 
     } else {
-        // New user - create account
-        // For security, you might want to restrict who can create accounts via Google
-        // Uncomment the line below to prevent auto-registration
-        // throw new Exception('No account found with this email. Please contact the administrator.');
-
-        // Create new user account (default role: admin)
+        // New user - auto-create account for testing
         $stmt = $mysqli->prepare("INSERT INTO admin_users (email, password, full_name, role, status, last_login) VALUES (?, ?, ?, 'admin', 'active', NOW())");
 
         // Generate a random password (user won't need it as they login via Google)
@@ -108,20 +100,21 @@ try {
         $userId = $stmt->insert_id;
         $stmt->close();
 
-        // Set session variables
+        // Set session with Google profile data
         $_SESSION['user'] = [
             'id' => $userId,
             'email' => $email,
-            'full_name' => $fullName,
+            'full_name' => $fullName,  // Use name from Google
             'role' => 'admin',
+            'profile_picture' => $profilePicture,  // Use picture from Google
             'login_method' => 'google'
         ];
         $_SESSION['last_activity'] = time();
 
-        // Success - redirect to dashboard
+        // Success - redirect to system overview
         $_SESSION['flash_success'] = 'Welcome! Your account has been created successfully.';
-        $dashboardUrl = getRedirectUrl('frontend/admin-page/dashboard.php');
-        header("Location: $dashboardUrl");
+        $systemOverviewUrl = getRedirectUrl('frontend/admin-page/system-overview.php');
+        header("Location: $systemOverviewUrl");
         exit;
     }
 

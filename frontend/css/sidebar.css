@@ -48,9 +48,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 1.25rem;
+    padding: 0 1.25rem;
     border-bottom: 1px solid var(--sidebar-border-1);
-    min-height: 70px;
+    height: 70px;
     background-color: var(--sidebar-bg-1);
     position: relative;
 }
@@ -71,7 +71,7 @@
 }
 
 .logo-img {
-    height: 60px;             /* Better size for visibility */
+    height: 50px;             /* Match header height with padding */
     width: auto;               /* Maintain proportions */
     object-fit: contain;       /* Prevent distortion */
     transition: transform 0.25s ease;

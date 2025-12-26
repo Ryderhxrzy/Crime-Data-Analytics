@@ -2,7 +2,7 @@
 /**
  * Reusable Admin Header Component - Improved Design
  * Include this file in your pages: <?php include 'sidebar/admin-header.php'; ?>
- * 
+ *
  * Features:
  * - Responsive menu toggle
  * - Notification and message icons with badges (outlined style)
@@ -10,6 +10,22 @@
  * - Dark mode support
  * - Clean, modern design
  */
+
+// Get user information from session
+$user_name = $_SESSION['user']['full_name'] ?? 'Guest User';
+$user_email = $_SESSION['user']['email'] ?? 'guest@example.com';
+$user_role = $_SESSION['user']['role'] ?? 'guest';
+$profile_picture = $_SESSION['user']['profile_picture'] ?? null;
+
+// Format role for display
+$role_display = ucfirst(str_replace('_', ' ', $user_role));
+
+// Use Google profile picture if available, otherwise generate avatar
+if ($profile_picture) {
+    $avatar_url = $profile_picture;
+} else {
+    $avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($user_name) . '&background=4c8a89&color=fff&size=128';
+}
 ?>
 
 <link rel="stylesheet" href="../css/notification-modal.css">;
@@ -49,11 +65,11 @@
         
         <div class="user-profile" id="userProfileBtn">
             <div class="user-info">
-                <div class="user-name">Admin User</div>
-                <div class="user-role">Administrator</div>
+                <div class="user-name"><?php echo htmlspecialchars($user_name); ?></div>
+                <div class="user-role"><?php echo htmlspecialchars($role_display); ?></div>
             </div>
             <div class="user-avatar">
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=4c8a89&color=fff&size=128" alt="Admin User" class="avatar-img">
+                <img src="<?php echo htmlspecialchars($avatar_url); ?>" alt="<?php echo htmlspecialchars($user_name); ?>" class="avatar-img">
             </div>
             <i class="fas fa-chevron-down dropdown-icon"></i>
         </div>
@@ -65,11 +81,11 @@
     <div class="dropdown-header">
         <div class="dropdown-user-info">
             <div class="dropdown-user-avatar">
-                <img src="https://ui-avatars.com/api/?name=Admin+User&background=4c8a89&color=fff&size=128" alt="Admin User">
+                <img src="<?php echo htmlspecialchars($avatar_url); ?>" alt="<?php echo htmlspecialchars($user_name); ?>">
             </div>
             <div class="dropdown-user-details">
-                <div class="dropdown-user-name">Admin User</div>
-                <div class="dropdown-user-email">admin@example.com</div>
+                <div class="dropdown-user-name"><?php echo htmlspecialchars($user_name); ?></div>
+                <div class="dropdown-user-email"><?php echo htmlspecialchars($user_email); ?></div>
             </div>
         </div>
     </div>
@@ -86,7 +102,7 @@
     </div>
     
     <div class="dropdown-footer">
-        <a href="#" class="dropdown-item logout-item">
+        <a href="../../api/action/logout.php" class="dropdown-item logout-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>
