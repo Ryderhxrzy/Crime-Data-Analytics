@@ -80,8 +80,8 @@ try {
         true  // HttpOnly - prevents JavaScript access
     );
 
-    // Redirect to dashboard or home page
-    header('Location: ../../../index.php?success=Login successful');
+    // Redirect to system overview page
+    header('Location: ../../../frontend/admin-page/system-overview.php');
     exit;
     
 } catch (Exception $e) {
