@@ -634,10 +634,52 @@
     outline-offset: 2px;
 }
 
+/* Legal Links */
+.legal-links {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary-1);
+}
+
+.legal-links p {
+    margin-bottom: 0.5rem;
+}
+
+.legal-links .links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.legal-links a {
+    color: var(--primary-color-1);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.legal-links a:hover {
+    color: var(--secondary-color-1);
+    text-decoration: underline;
+}
+
+.legal-links span {
+    color: var(--text-secondary-1);
+}
+
 /* Focus visible states */
 .btn-google:focus-visible {
     outline: 2px solid var(--primary-color-1);
     outline-offset: 2px;
+}
+
+.legal-links a:focus-visible {
+    outline: 2px solid var(--primary-color-1);
+    outline-offset: 2px;
+    border-radius: 2px;
 }
 
 /* Reduce motion for users who prefer it */
