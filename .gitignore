@@ -1,2 +1,7 @@
+# Environment and Database
 .env
 db.sql
+
+# Dependencies
+node_modules/
+vendor/
