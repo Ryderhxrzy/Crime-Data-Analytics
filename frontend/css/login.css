@@ -307,6 +307,68 @@
     }
 }
 
+/* Login Divider */
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color-1);
+}
+
+.divider-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+/* Google Login Button */
+.btn-google {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: var(--white);
+    color: var(--text-color-1);
+    border: 1.5px solid var(--border-color-1);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-family: var(--font-family-1);
+}
+
+.btn-google:hover {
+    background-color: var(--bg-color-1);
+    border-color: var(--primary-color-1);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-google:active {
+    transform: translateY(1px);
+}
+
+.btn-google:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 /* ===================================
    LOADING OVERLAY (REUSABLE COMPONENT)
    =================================== */
@@ -456,6 +518,11 @@
         padding: 0.75rem 1.25rem;
         font-size: 0.95rem;
     }
+
+    .btn-google {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+    }
 }
 
 /* Mobile Portrait (480px) */
@@ -518,6 +585,15 @@
         padding: 0.7rem 1rem;
         font-size: 0.9rem;
     }
+
+    .btn-google {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .login-divider {
+        margin: 0.75rem 0;
+    }
 }
 
 /* Extra Small Mobile (360px) */
@@ -554,6 +630,12 @@
 .btn-login:focus-visible,
 .toggle-password:focus-visible,
 .forgot-password:focus-visible {
+    outline: 2px solid var(--primary-color-1);
+    outline-offset: 2px;
+}
+
+/* Focus visible states */
+.btn-google:focus-visible {
     outline: 2px solid var(--primary-color-1);
     outline-offset: 2px;
 }
