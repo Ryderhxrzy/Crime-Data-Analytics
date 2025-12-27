@@ -5,13 +5,15 @@
 /* Login Wrapper - Full Page Container */
 .login-wrapper {
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--white);
     padding: 2rem 1rem;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Login Container - Main Card Container */
@@ -197,7 +199,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
     margin-top: -0.5rem;
+    flex-wrap: nowrap;
 }
 
 /* Custom Checkbox */
@@ -207,6 +211,10 @@
     gap: 0.5rem;
     cursor: pointer;
     user-select: none;
+    padding: 0.5rem 0;
+    min-height: 44px; /* Minimum touch target size */
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -223,6 +231,7 @@
     justify-content: center;
     transition: all 0.3s ease;
     position: relative;
+    flex-shrink: 0;
 }
 
 .checkbox-label input[type="checkbox"]:checked ~ .checkbox-custom {
@@ -250,6 +259,12 @@
     text-decoration: none;
     font-weight: 500;
     transition: all 0.3s ease;
+    padding: 0.5rem 0;
+    min-height: 44px; /* Minimum touch target size for mobile */
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .forgot-password:hover {
@@ -261,6 +276,7 @@
 .btn-login {
     width: 100%;
     padding: 0.875rem 1.5rem;
+    min-height: 48px; /* Minimum touch target size */
     background: var(--primary-color-1);
     color: var(--white);
     border: none;
@@ -332,6 +348,7 @@
 .btn-google {
     width: 100%;
     padding: 0.875rem 1.5rem;
+    min-height: 48px; /* Minimum touch target size */
     background: var(--white);
     color: var(--text-color-1);
     border: 1.5px solid var(--border-color-1);
@@ -473,10 +490,8 @@
         font-size: 0.9rem;
     }
 
-    .form-options {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+    .legal-links {
+        font-size: 0.825rem;
     }
 }
 
@@ -522,6 +537,10 @@
     .btn-google {
         padding: 0.75rem 1.25rem;
         font-size: 0.95rem;
+    }
+
+    .legal-links {
+        font-size: 0.8rem;
     }
 }
 
@@ -573,12 +592,22 @@
         font-size: 0.9rem;
     }
 
+    .form-options {
+        gap: 0.5rem;
+        margin-top: -0.25rem;
+    }
+
+    .checkbox-label {
+        padding: 0.375rem 0;
+    }
+
     .checkbox-text {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
     .forgot-password {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
+        padding: 0.375rem 0;
     }
 
     .btn-login {
@@ -589,10 +618,30 @@
     .btn-google {
         padding: 0.7rem 1rem;
         font-size: 0.9rem;
+        gap: 0.5rem;
+    }
+
+    .google-icon {
+        width: 18px;
+        height: 18px;
     }
 
     .login-divider {
         margin: 0.75rem 0;
+    }
+
+    .legal-links {
+        margin-top: 1rem;
+        font-size: 0.8rem;
+    }
+
+    .legal-links p {
+        margin-bottom: 0.4rem;
+    }
+
+    .legal-links .links {
+        gap: 0.4rem;
+        line-height: 1.6;
     }
 }
 
@@ -610,8 +659,16 @@
         padding: 1rem 0.875rem;
     }
 
+    .login-logo {
+        height: 60px;
+    }
+
     .login-title {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
+    }
+
+    .login-subtitle {
+        font-size: 0.75rem;
     }
 
     .login-form {
@@ -620,6 +677,180 @@
 
     .form-group {
         gap: 0.4rem;
+    }
+
+    .form-input {
+        padding: 0.65rem 0.75rem;
+        padding-left: 2rem;
+        font-size: 0.85rem;
+    }
+
+    .input-icon {
+        left: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .toggle-password {
+        right: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .form-options {
+        gap: 0.4rem;
+    }
+
+    .checkbox-label {
+        padding: 0.3rem 0;
+    }
+
+    .checkbox-text {
+        font-size: 0.75rem;
+    }
+
+    .forgot-password {
+        font-size: 0.75rem;
+        padding: 0.3rem 0;
+    }
+
+    .btn-login {
+        padding: 0.65rem 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-google {
+        padding: 0.65rem 0.875rem;
+        font-size: 0.875rem;
+        gap: 0.4rem;
+    }
+
+    .google-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .legal-links {
+        margin-top: 0.875rem;
+        font-size: 0.75rem;
+    }
+
+    .legal-links p {
+        margin-bottom: 0.35rem;
+    }
+
+    .legal-links .links {
+        gap: 0.35rem;
+    }
+}
+
+/* Very Small Mobile (320px) - iPhone SE, Galaxy Fold */
+@media (max-width: 320px) {
+    .login-wrapper {
+        padding: 0.5rem 0.375rem;
+    }
+
+    .login-container {
+        border-radius: 8px;
+    }
+
+    .login-card {
+        padding: 0.875rem 0.75rem;
+    }
+
+    .login-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .login-logo {
+        height: 50px;
+        margin-bottom: 0.75rem;
+    }
+
+    .login-title {
+        font-size: 1.1rem;
+    }
+
+    .login-subtitle {
+        font-size: 0.7rem;
+    }
+
+    .login-form {
+        gap: 0.875rem;
+    }
+
+    .form-group {
+        gap: 0.35rem;
+    }
+
+    .form-input {
+        padding: 0.6rem 0.65rem;
+        padding-left: 1.875rem;
+        font-size: 0.8rem;
+    }
+
+    .input-icon {
+        left: 0.65rem;
+        font-size: 0.8rem;
+    }
+
+    .toggle-password {
+        right: 0.65rem;
+        font-size: 0.8rem;
+        padding: 0.375rem;
+    }
+
+    .form-options {
+        gap: 0.35rem;
+    }
+
+    .checkbox-label {
+        padding: 0.25rem 0;
+    }
+
+    .checkbox-text {
+        font-size: 0.7rem;
+    }
+
+    .forgot-password {
+        font-size: 0.7rem;
+        padding: 0.25rem 0;
+    }
+
+    .btn-login {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .btn-google {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+        gap: 0.35rem;
+    }
+
+    .google-icon {
+        width: 15px;
+        height: 15px;
+    }
+
+    .login-divider {
+        margin: 0.625rem 0;
+        gap: 0.75rem;
+    }
+
+    .divider-text {
+        font-size: 0.75rem;
+    }
+
+    .legal-links {
+        margin-top: 0.75rem;
+        font-size: 0.7rem;
+    }
+
+    .legal-links p {
+        margin-bottom: 0.3rem;
+    }
+
+    .legal-links .links {
+        gap: 0.3rem;
     }
 }
 
@@ -636,7 +867,7 @@
 
 /* Legal Links */
 .legal-links {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
     text-align: center;
     font-size: 0.85rem;
     color: var(--text-secondary-1);
@@ -644,6 +875,7 @@
 
 .legal-links p {
     margin-bottom: 0.5rem;
+    line-height: 1.5;
 }
 
 .legal-links .links {
