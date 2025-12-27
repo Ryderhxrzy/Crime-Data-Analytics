@@ -29,7 +29,16 @@
 .chart-canvas-container {
     position: relative;
     height: 400px;
+    width: 100%;
+    max-width: 100%;
     margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.chart-canvas-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block;
 }
 
 .chart-canvas-container.medium {

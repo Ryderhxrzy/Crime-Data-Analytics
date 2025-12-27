@@ -91,7 +91,7 @@ if ($profile_picture) {
     </div>
     
     <div class="dropdown-body">
-        <a href="#" class="dropdown-item">
+        <a href="../admin-page/profile.php" class="dropdown-item">
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </a>
