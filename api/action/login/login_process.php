@@ -48,7 +48,6 @@ try {
         exit;
     }
 
-
     // Check registration type - only allow email login for email-registered accounts
     if ($user['registration_type'] === 'google') {
         header('Location: ../../../index.php?error=This account is registered with Google. Please use Google Sign-In.');

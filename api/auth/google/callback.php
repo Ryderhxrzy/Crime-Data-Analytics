@@ -66,11 +66,6 @@ try {
             throw new Exception('Your account is not verified. Please contact the super admin to verify your account.');
         }
 
-        // Check account status
-        if ($user['status'] !== 'active') {
-            throw new Exception('Your account is ' . $user['status'] . '. Please contact administrator.');
-        }
-
         // Check registration type - only allow Google login for Google-registered accounts
         if ($user['registration_type'] === 'email') {
             throw new Exception('This account is registered with email/password. Please use the email login form.');
