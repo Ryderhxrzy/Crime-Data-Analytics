@@ -1,3 +1,7 @@
+<?php
+// Authentication check - must be at the top of every admin page
+require_once '../includes/auth-check.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
