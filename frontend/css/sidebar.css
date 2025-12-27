@@ -428,7 +428,12 @@ body.sidebar-open {
     }
 
     .sidebar-header {
-        padding: 1rem;
+        padding: 0 1rem;
+        height: 60px;
+    }
+
+    .logo-img {
+        height: 40px;
     }
 
     .sidebar-logo {
@@ -453,6 +458,31 @@ body.sidebar-open {
 @media (max-width: 480px) {
     .sidebar {
         width: 90vw;
+    }
+
+    .sidebar-header {
+        padding: 0 0.75rem;
+        height: 56px;
+    }
+
+    .logo-img {
+        height: 36px;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 375px) {
+    .sidebar {
+        width: 95vw;
+    }
+
+    .sidebar-header {
+        padding: 0 0.5rem;
+        height: 56px;
+    }
+
+    .logo-img {
+        height: 32px;
     }
 }
 
