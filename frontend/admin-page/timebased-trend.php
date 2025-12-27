@@ -7,7 +7,7 @@ require_once '../../api/middleware/auth.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time-Based Trends - Crime Data Analytics</title>
+    <title>Time-Based Trends | Crime Dep.</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../css/sidebar.css">
@@ -16,6 +16,7 @@ require_once '../../api/middleware/auth.php';
     <link rel="stylesheet" href="../css/sidebar-footer.css">
     <link rel="stylesheet" href="../css/timebased-trend.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/x-icon" href="../image/favicon.ico">
 </head>
 <body>
     <?php include '../includes/sidebar.php' ?>
