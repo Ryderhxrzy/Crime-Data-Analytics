@@ -61,13 +61,19 @@ try {
     $stmt->close();
 
     if ($user) {
-        // User exists - check account status
+        // User exists - check if account is verified
+        if ($user['account_status'] === 'unverified') {
+            throw new Exception('Your account is not verified. Please contact the super admin to verify your account.');
+        }
+
+        // Check account status
         if ($user['status'] !== 'active') {
             throw new Exception('Your account is ' . $user['status'] . '. Please contact administrator.');
         }
 
-        if ($user['account_status'] !== 'verified') {
-            throw new Exception('Your account is not verified. Please contact administrator.');
+        // Check registration type - only allow Google login for Google-registered accounts
+        if ($user['registration_type'] === 'email') {
+            throw new Exception('This account is registered with email/password. Please use the email login form.');
         }
 
         // Update last login
@@ -86,6 +92,11 @@ try {
             'login_method' => 'google'
         ];
         $_SESSION['last_activity'] = time();
+        $_SESSION['session_created'] = time();
+
+        // Store user IP and user agent for security
+        $_SESSION['user_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
+        $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
         // Success - redirect to system overview
         $systemOverviewUrl = getRedirectUrl('frontend/admin-page/system-overview.php');
