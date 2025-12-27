@@ -11,7 +11,7 @@
     <div class="footer-bottom">
 
         <div class="footer-copyright">
-            <p>&copy; <?php echo date('Y'); ?> LGU #4. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> Crime Department, AlerTaraQC. All rights reserved.</p>
         </div>
 
         <div class="footer-legal">
