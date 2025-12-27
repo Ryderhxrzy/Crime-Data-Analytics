@@ -52,9 +52,8 @@ try {
         throw new Exception('Email not provided by Google');
     }
 
-    // FOR TESTING: Allow all Google users to login
-    // Check if user already exists in database
-    $stmt = $mysqli->prepare("SELECT id, email, role, status FROM admin_users WHERE email = ?");
+    // Check if user exists in crime_department_admin_users table
+    $stmt = $mysqli->prepare("SELECT id, email, role, status, account_status, registration_type FROM crime_department_admin_users WHERE email = ?");
     $stmt->bind_param('s', $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -62,8 +61,17 @@ try {
     $stmt->close();
 
     if ($user) {
-        // User exists - update last login
-        $stmt = $mysqli->prepare("UPDATE admin_users SET last_login = NOW() WHERE id = ?");
+        // User exists - check account status
+        if ($user['status'] !== 'active') {
+            throw new Exception('Your account is ' . $user['status'] . '. Please contact administrator.');
+        }
+
+        if ($user['account_status'] !== 'verified') {
+            throw new Exception('Your account is not verified. Please contact administrator.');
+        }
+
+        // Update last login
+        $stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET last_login = NOW() WHERE id = ?");
         $stmt->bind_param('i', $user['id']);
         $stmt->execute();
         $stmt->close();
@@ -85,37 +93,8 @@ try {
         exit;
 
     } else {
-        // New user - auto-create account for testing
-        $stmt = $mysqli->prepare("INSERT INTO admin_users (email, password, full_name, role, status, last_login) VALUES (?, ?, ?, 'admin', 'active', NOW())");
-
-        // Generate a random password (user won't need it as they login via Google)
-        $randomPassword = password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT);
-
-        $stmt->bind_param('sss', $email, $randomPassword, $fullName);
-
-        if (!$stmt->execute()) {
-            throw new Exception('Failed to create user account');
-        }
-
-        $userId = $stmt->insert_id;
-        $stmt->close();
-
-        // Set session with Google profile data
-        $_SESSION['user'] = [
-            'id' => $userId,
-            'email' => $email,
-            'full_name' => $fullName,  // Use name from Google
-            'role' => 'admin',
-            'profile_picture' => $profilePicture,  // Use picture from Google
-            'login_method' => 'google'
-        ];
-        $_SESSION['last_activity'] = time();
-
-        // Success - redirect to system overview
-        $_SESSION['flash_success'] = 'Welcome! Your account has been created successfully.';
-        $systemOverviewUrl = getRedirectUrl('frontend/admin-page/system-overview.php');
-        header("Location: $systemOverviewUrl");
-        exit;
+        // User does not exist - show error message
+        throw new Exception('Account not found. Please contact administrator to create your account.');
     }
 
 } catch (Exception $e) {

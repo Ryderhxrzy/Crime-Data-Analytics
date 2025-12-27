@@ -6,9 +6,16 @@
  * 1. User session is active
  * 2. Session has not expired
  * 3. User data exists in session
+ * 4. Session is not hijacked (IP and User Agent validation)
+ *
+ * Features:
+ * - Session timeout (1 hour)
+ * - Session hijacking protection (IP and User Agent check)
+ * - Automatic session regeneration (every 30 minutes)
+ * - Helper functions for user data and role checking
  *
  * Usage: Include this file at the top of any protected page
- * require_once 'api/middleware/auth.php';
+ * From frontend/admin-page/: require_once '../../api/middleware/auth.php';
  */
 
 // Start session if not already started
@@ -41,6 +48,26 @@ function isSessionExpired() {
 }
 
 /**
+ * Check for session hijacking attempts
+ */
+function isSessionHijacked() {
+    $current_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $current_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
+    // Check IP address
+    if (isset($_SESSION['user_ip']) && $_SESSION['user_ip'] !== $current_ip) {
+        return true;
+    }
+
+    // Check user agent
+    if (isset($_SESSION['user_agent']) && $_SESSION['user_agent'] !== $current_agent) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * Destroy session and redirect to login
  */
 function destroySessionAndRedirect($message = 'Please login to continue') {
@@ -55,8 +82,8 @@ function destroySessionAndRedirect($message = 'Please login to continue') {
     session_start();
     $_SESSION['flash_error'] = $redirect_message;
 
-    // Redirect to login page
-    header('Location: /Crime-Data-Analytics/index.php');
+    // Redirect to login page (relative path from frontend/admin-page/)
+    header('Location: ../../index.php');
     exit;
 }
 
@@ -75,6 +102,11 @@ if (!isAuthenticated()) {
 // Check session expiry
 if (isSessionExpired()) {
     destroySessionAndRedirect('Your session has expired. Please login again');
+}
+
+// Check for session hijacking
+if (isSessionHijacked()) {
+    destroySessionAndRedirect('Security violation detected. Please login again');
 }
 
 // Update last activity time

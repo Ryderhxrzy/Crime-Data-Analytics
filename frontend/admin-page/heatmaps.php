@@ -1,6 +1,6 @@
 <?php
 // Authentication check - must be at the top of every admin page
-require_once '../includes/auth-check.php';
+require_once '../../api/middleware/auth.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

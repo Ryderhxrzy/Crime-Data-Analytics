@@ -25,28 +25,45 @@ if ($mysqli->connect_error) {
 }
 
 try {
-    $stmt = $mysqli->prepare("SELECT id, email, password, full_name, role FROM admin_users WHERE email = ? LIMIT 1");
-    
+    $stmt = $mysqli->prepare("SELECT id, email, password, full_name, role, status, account_status FROM crime_department_admin_users WHERE email = ? LIMIT 1");
+
     if (!$stmt) {
         throw new Exception("Database preparation failed: " . $mysqli->error);
     }
-    
+
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows === 0) {
-        header('Location: ../../../index.php?error=Invalid email or password');
+        header('Location: ../../../index.php?error=Account not found. Please contact administrator.');
         exit;
     }
-    
+
     $user = $result->fetch_assoc();
-    
+
+    // Check account status
+    if ($user['status'] !== 'active') {
+        header('Location: ../../../index.php?error=Your account is ' . $user['status'] . '. Please contact administrator.');
+        exit;
+    }
+
+    if ($user['account_status'] !== 'verified') {
+        header('Location: ../../../index.php?error=Your account is not verified. Please contact administrator.');
+        exit;
+    }
+
+    // Check password (skip if null - for Google OAuth users)
+    if ($user['password'] === null) {
+        header('Location: ../../../index.php?error=Please use Google Sign-In for this account.');
+        exit;
+    }
+
     if (!password_verify($password, $user['password'])) {
         header('Location: ../../../index.php?error=Invalid email or password');
         exit;
     }
-    
+
     $stmt->close();
 
     // Regenerate session ID for security
