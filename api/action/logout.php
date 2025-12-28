@@ -16,6 +16,17 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Get user info before destroying session (for logging purposes if needed)
 $user_email = $_SESSION['user']['email'] ?? 'unknown';
+$user_id = $_SESSION['user']['id'] ?? null;
+
+// Update user status to 'inactive' and last_login timestamp before logout
+if ($user_id) {
+    require_once '../config.php';
+    $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'inactive', last_login = NOW() WHERE id = ?");
+    $update_stmt->bind_param("i", $user_id);
+    $update_stmt->execute();
+    $update_stmt->close();
+    $mysqli->close();
+}
 
 // Unset all session variables
 $_SESSION = array();
