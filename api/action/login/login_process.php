@@ -67,6 +67,12 @@ try {
 
     $stmt->close();
 
+    // Update user status to 'active' and last_login timestamp
+    $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'active', last_login = NOW() WHERE id = ?");
+    $update_stmt->bind_param("i", $user['id']);
+    $update_stmt->execute();
+    $update_stmt->close();
+
     // Regenerate session ID for security
     session_regenerate_id(true);
 
