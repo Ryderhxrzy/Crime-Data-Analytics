@@ -76,6 +76,32 @@ try {
         $insert_stmt->close();
     }
 
+    // Log the activity
+    // Get real IP address (checking for proxies and forwarded IPs)
+    $ip_address = null;
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip_address = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // X-Forwarded-For can contain multiple IPs, get the first one
+        $ip_list = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $ip_address = trim($ip_list[0]);
+    } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+    }
+
+    // Convert IPv6 loopback to IPv4 for consistency
+    if ($ip_address === '::1') {
+        $ip_address = '127.0.0.1';
+    }
+
+    $activity_type = 'profile_update';
+    $description = "Updated profile information (Full Name: $full_name)";
+
+    $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address) VALUES (?, ?, ?, ?)");
+    $log_stmt->bind_param("isss", $user_id, $activity_type, $description, $ip_address);
+    $log_stmt->execute();
+    $log_stmt->close();
+
     // Commit transaction
     $mysqli->commit();
 
