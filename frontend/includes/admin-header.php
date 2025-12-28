@@ -26,6 +26,29 @@ if ($profile_picture) {
 } else {
     $avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($user_name) . '&background=4c8a89&color=fff&size=128';
 }
+
+// Check if user has incomplete profile for header
+$header_user_id = $_SESSION['user']['id'] ?? null;
+$header_has_incomplete_profile = false;
+
+if ($header_user_id) {
+    require_once __DIR__ . '/../../api/config.php';
+    $header_stmt = $mysqli->prepare("SELECT phone_number, address, department, position, bio FROM crime_department_admin_information WHERE admin_user_id = ? LIMIT 1");
+    $header_stmt->bind_param("i", $header_user_id);
+    $header_stmt->execute();
+    $header_result = $header_stmt->get_result();
+    $header_additional_info = $header_result->fetch_assoc();
+    $header_stmt->close();
+
+    if (!$header_additional_info ||
+        empty($header_additional_info['phone_number']) ||
+        empty($header_additional_info['address']) ||
+        empty($header_additional_info['department']) ||
+        empty($header_additional_info['position']) ||
+        empty($header_additional_info['bio'])) {
+        $header_has_incomplete_profile = true;
+    }
+}
 ?>
 
 <link rel="stylesheet" href="../css/notification-modal.css">;
@@ -94,6 +117,9 @@ if ($profile_picture) {
         <a href="../admin-page/profile.php" class="dropdown-item">
             <i class="fas fa-user"></i>
             <span>Profile</span>
+            <?php if ($header_has_incomplete_profile): ?>
+                <span class="dropdown-notification-dot" title="Profile incomplete"></span>
+            <?php endif; ?>
         </a>
         <a href="#" class="dropdown-item">
             <i class="fas fa-cog"></i>

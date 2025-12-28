@@ -11,6 +11,29 @@
  * - Icon-based navigation
  * - Active state management
  */
+
+// Check if user has incomplete profile
+$sidebar_user_id = $_SESSION['user']['id'] ?? null;
+$sidebar_has_incomplete_profile = false;
+
+if ($sidebar_user_id) {
+    require_once __DIR__ . '/../../api/config.php';
+    $sidebar_stmt = $mysqli->prepare("SELECT phone_number, address, department, position, bio FROM crime_department_admin_information WHERE admin_user_id = ? LIMIT 1");
+    $sidebar_stmt->bind_param("i", $sidebar_user_id);
+    $sidebar_stmt->execute();
+    $sidebar_result = $sidebar_stmt->get_result();
+    $sidebar_additional_info = $sidebar_result->fetch_assoc();
+    $sidebar_stmt->close();
+
+    if (!$sidebar_additional_info ||
+        empty($sidebar_additional_info['phone_number']) ||
+        empty($sidebar_additional_info['address']) ||
+        empty($sidebar_additional_info['department']) ||
+        empty($sidebar_additional_info['position']) ||
+        empty($sidebar_additional_info['bio'])) {
+        $sidebar_has_incomplete_profile = true;
+    }
+}
 ?>
 
 <!-- Sidebar Component -->
@@ -247,6 +270,9 @@
                         <a href="profile.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
+                            <?php if ($sidebar_has_incomplete_profile): ?>
+                                <span class="notification-dot" title="Profile incomplete"></span>
+                            <?php endif; ?>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
