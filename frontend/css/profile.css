@@ -2,32 +2,19 @@
    PROFILE PAGE STYLES
    =================================== */
 
-/* Main Content */
-.main-content {
-    margin-left: 250px;
-    padding: 2rem;
-    min-height: 100vh;
-    background: var(--bg-color-1);
-    transition: margin-left 0.3s ease;
-}
-
-.main-container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
 /* Profile Content */
 .page-content {
     display: block;
     width: 100%;
+    margin: 2rem auto;
 }
 
 /* Profile Card */
 .profile-card {
     flex: 1;
     background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
     border-radius: 12px;
-    box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
 
@@ -263,6 +250,35 @@
     color: #db4437;
 }
 
+/* Form Inputs */
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border-color-1);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--text-color-1);
+    background: var(--bg-color-1);
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color-1);
+    box-shadow: 0 0 0 3px rgba(76, 138, 137, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-secondary-1);
+    opacity: 0.6;
+}
+
+textarea.form-input {
+    resize: vertical;
+    min-height: 100px;
+}
+
 /* Profile Actions */
 .profile-actions {
     padding: 2rem;
@@ -270,6 +286,7 @@
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .btn {
@@ -315,11 +332,6 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-    .main-content {
-        margin-left: 0;
-        padding: 1.5rem;
-    }
-
     .info-grid {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.25rem;
@@ -327,10 +339,6 @@
 }
 
 @media (max-width: 768px) {
-    .main-content {
-        padding: 1rem;
-    }
-
     .profile-header {
         padding: 2rem 1.5rem;
     }
@@ -371,10 +379,6 @@
 }
 
 @media (max-width: 480px) {
-    .main-content {
-        padding: 0.75rem;
-    }
-
     .profile-header {
         padding: 1.5rem 1rem;
     }
@@ -424,13 +428,3 @@
     }
 }
 
-/* Sidebar collapsed state */
-.sidebar-collapsed .main-content {
-    margin-left: 80px;
-}
-
-@media (max-width: 1024px) {
-    .sidebar-collapsed .main-content {
-        margin-left: 0;
-    }
-}

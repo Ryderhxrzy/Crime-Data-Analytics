@@ -24,8 +24,27 @@ if (!$user_data) {
     exit;
 }
 
-// Get profile picture
-$profile_picture = $_SESSION['user']['profile_picture'] ?? $user_data['profile_picture'] ?? null;
+// Fetch additional information from crime_department_admin_information table
+$stmt = $mysqli->prepare("SELECT phone_number, address, department, position, bio FROM crime_department_admin_information WHERE admin_user_id = ? LIMIT 1");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$additional_info = $result->fetch_assoc();
+$stmt->close();
+
+// Check if user has incomplete profile (any field is empty)
+$has_incomplete_profile = false;
+if (!$additional_info ||
+    empty($additional_info['phone_number']) ||
+    empty($additional_info['address']) ||
+    empty($additional_info['department']) ||
+    empty($additional_info['position']) ||
+    empty($additional_info['bio'])) {
+    $has_incomplete_profile = true;
+}
+
+// Get profile picture from database only
+$profile_picture = $user_data['profile_picture'] ?? null;
 if (!$profile_picture) {
     $profile_picture = 'https://ui-avatars.com/api/?name=' . urlencode($user_data['full_name']) . '&background=4c8a89&color=fff&size=256';
 }
@@ -44,6 +63,8 @@ if (!$profile_picture) {
     <link rel="stylesheet" href="../css/sidebar-footer.css">
     <link rel="stylesheet" href="../css/profile.css">
     <link rel="icon" type="image/x-icon" href="../image/favicon.ico">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <?php include '../includes/sidebar.php' ?>
@@ -88,7 +109,7 @@ if (!$profile_picture) {
                                         <?php echo ucfirst(str_replace('_', ' ', $user_data['role'])); ?>
                                     </span>
                                     <span class="badge badge-type">
-                                        <i class="fas fa-<?php echo $user_data['registration_type'] === 'google' ? 'brands fa-google' : 'envelope'; ?>"></i>
+                                        <i class="<?php echo $user_data['registration_type'] === 'google' ? 'fab fa-google' : 'fas fa-envelope'; ?>"></i>
                                         <?php echo ucfirst($user_data['registration_type']); ?>
                                     </span>
                                     <span class="badge badge-<?php echo strtolower($user_data['account_status']); ?>">
@@ -178,7 +199,7 @@ if (!$profile_picture) {
                                 </label>
                                 <p class="info-value">
                                     <span class="method-badge method-<?php echo $user_data['registration_type']; ?>">
-                                        <i class="fas fa-<?php echo $user_data['registration_type'] === 'google' ? 'brands fa-google' : 'envelope'; ?>"></i>
+                                        <i class="<?php echo $user_data['registration_type'] === 'google' ? 'fab fa-google' : 'fas fa-envelope'; ?>"></i>
                                         <?php echo ucfirst($user_data['registration_type']); ?>
                                     </span>
                                 </p>
@@ -262,78 +283,153 @@ if (!$profile_picture) {
                         </div>
                     </div>
 
-                    <!-- Additional Information Section (Not Yet Provided) -->
-                    <div class="profile-section">
-                        <div class="section-header">
-                            <h3 class="section-title">
-                                <i class="fas fa-info-circle"></i>
-                                Additional Information
-                                <span class="badge badge-warning">Not Yet Provided</span>
-                            </h3>
+                    <!-- Additional Information Section (Editable) -->
+                    <form id="profileForm" method="POST" action="../../api/action/update-profile.php">
+                        <div class="profile-section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    Additional Information
+                                    <?php if ($has_incomplete_profile): ?>
+                                        <span class="badge badge-warning">Incomplete</span>
+                                    <?php endif; ?>
+                                </h3>
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label class="info-label">
+                                        <i class="fas fa-user"></i>
+                                        Full Name
+                                    </label>
+                                    <input type="text" name="full_name" class="form-input" value="<?php echo htmlspecialchars($user_data['full_name']); ?>" required>
+                                </div>
+                                <div class="info-item">
+                                    <label class="info-label">
+                                        <i class="fas fa-phone"></i>
+                                        Phone Number
+                                    </label>
+                                    <input type="tel" name="phone_number" class="form-input" value="<?php echo htmlspecialchars($additional_info['phone_number'] ?? ''); ?>" placeholder="Enter phone number">
+                                </div>
+                                <div class="info-item">
+                                    <label class="info-label">
+                                        <i class="fas fa-building"></i>
+                                        Department
+                                    </label>
+                                    <input type="text" name="department" class="form-input" value="<?php echo htmlspecialchars($additional_info['department'] ?? ''); ?>" placeholder="Enter department">
+                                </div>
+                                <div class="info-item">
+                                    <label class="info-label">
+                                        <i class="fas fa-briefcase"></i>
+                                        Position
+                                    </label>
+                                    <input type="text" name="position" class="form-input" value="<?php echo htmlspecialchars($additional_info['position'] ?? ''); ?>" placeholder="Enter position">
+                                </div>
+                                <div class="info-item" style="grid-column: 1 / -1;">
+                                    <label class="info-label">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        Address
+                                    </label>
+                                    <textarea name="address" class="form-input" rows="2" placeholder="Enter your complete address"><?php echo htmlspecialchars($additional_info['address'] ?? ''); ?></textarea>
+                                </div>
+                                <div class="info-item" style="grid-column: 1 / -1;">
+                                    <label class="info-label">
+                                        <i class="fas fa-align-left"></i>
+                                        Bio
+                                    </label>
+                                    <textarea name="bio" class="form-input" rows="4" placeholder="Write a short bio about yourself"><?php echo htmlspecialchars($additional_info['bio'] ?? ''); ?></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="info-grid">
-                            <div class="info-item not-provided">
-                                <label class="info-label">
-                                    <i class="fas fa-phone"></i>
-                                    Phone Number
-                                </label>
-                                <p class="info-value text-muted">Not provided</p>
-                            </div>
-                            <div class="info-item not-provided">
-                                <label class="info-label">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Address
-                                </label>
-                                <p class="info-value text-muted">Not provided</p>
-                            </div>
-                            <div class="info-item not-provided">
-                                <label class="info-label">
-                                    <i class="fas fa-building"></i>
-                                    Department
-                                </label>
-                                <p class="info-value text-muted">Not provided</p>
-                            </div>
-                            <div class="info-item not-provided">
-                                <label class="info-label">
-                                    <i class="fas fa-briefcase"></i>
-                                    Position
-                                </label>
-                                <p class="info-value text-muted">Not provided</p>
-                            </div>
-                            <div class="info-item not-provided">
-                                <label class="info-label">
-                                    <i class="fas fa-birthday-cake"></i>
-                                    Date of Birth
-                                </label>
-                                <p class="info-value text-muted">Not provided</p>
-                            </div>
-                            <div class="info-item not-provided">
-                                <label class="info-label">
-                                    <i class="fas fa-venus-mars"></i>
-                                    Gender
-                                </label>
-                                <p class="info-value text-muted">Not provided</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Profile Actions -->
-                    <div class="profile-actions">
-                        <button class="btn btn-primary" onclick="alert('Edit profile functionality coming soon!')">
-                            <i class="fas fa-edit"></i>
-                            Edit Profile
-                        </button>
-                        <button class="btn btn-outline" onclick="window.location.href='system-overview.php'">
-                            <i class="fas fa-arrow-left"></i>
-                            Back to Dashboard
-                        </button>
+                        <!-- Profile Actions -->
+                        <div class="profile-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Save Profile
+                            </button>
+                        </div>
+                    </form>
                     </div>
-                    </div>
-                </div>
                 </div>
             </div>
         </div>
         <?php include('../includes/admin-footer.php') ?>
     </div>
+
+    <script>
+        // Check for success/error messages in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+
+        if (success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: success,
+                confirmButtonColor: '#4c8a89',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Remove query parameters from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
+
+        if (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: error,
+                confirmButtonColor: '#4c8a89',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                // Remove query parameters from URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('../../api/action/update-profile.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while updating your profile. Please try again.',
+                    confirmButtonColor: '#4c8a89',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+    </script>
 </body>
 </html>
