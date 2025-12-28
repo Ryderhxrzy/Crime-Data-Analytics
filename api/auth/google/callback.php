@@ -71,8 +71,8 @@ try {
             throw new Exception('This account is registered with email/password. Please use the email login form.');
         }
 
-        // Update last login
-        $stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET last_login = NOW() WHERE id = ?");
+        // Update status to 'active' and last login
+        $stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'active', last_login = NOW() WHERE id = ?");
         $stmt->bind_param('i', $user['id']);
         $stmt->execute();
         $stmt->close();
