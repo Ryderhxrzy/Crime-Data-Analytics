@@ -67,10 +67,24 @@ try {
 
         // Log failed login attempt without user_id (since credentials are wrong)
         $description = "Failed login attempt - incorrect password for email: " . $email;
-        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (NULL, 'failed_login', ?, ?, ?)");
-        $log_stmt->bind_param("sss", $description, $ip_address, $user_agent);
-        $log_stmt->execute();
-        $log_stmt->close();
+
+        // Try direct insert without prepared statement to test
+        try {
+            $escaped_description = $mysqli->real_escape_string($description);
+            $escaped_ip = $ip_address ? "'" . $mysqli->real_escape_string($ip_address) . "'" : "NULL";
+            $escaped_agent = $user_agent ? "'" . $mysqli->real_escape_string($user_agent) . "'" : "NULL";
+
+            $sql = "INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent)
+                    VALUES (NULL, 'failed_login', '$escaped_description', $escaped_ip, $escaped_agent)";
+
+            if (!$mysqli->query($sql)) {
+                error_log("Failed login log error: " . $mysqli->error);
+            } else {
+                error_log("Failed login logged successfully. Insert ID: " . $mysqli->insert_id);
+            }
+        } catch (Exception $e) {
+            error_log("Failed login log exception: " . $e->getMessage());
+        }
 
         header('Location: ../../../index.php?error=Invalid email or password');
         exit;
