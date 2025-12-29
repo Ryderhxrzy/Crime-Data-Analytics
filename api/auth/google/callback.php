@@ -77,6 +77,16 @@ try {
         $stmt->execute();
         $stmt->close();
 
+        // Get user IP address and user agent
+        $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+        // Insert activity log for Google login
+        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'login', 'User logged in via Google OAuth', ?, ?)");
+        $log_stmt->bind_param('iss', $user['id'], $ip_address, $user_agent);
+        $log_stmt->execute();
+        $log_stmt->close();
+
         // Set session with Google profile data
         $_SESSION['user'] = [
             'id' => $user['id'],

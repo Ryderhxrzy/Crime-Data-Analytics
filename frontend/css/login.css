@@ -366,12 +366,7 @@
 
 .btn-google:hover {
     background-color: var(--bg-color-1);
-    border-color: var(--primary-color-1);
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-google:active {
-    transform: translateY(1px);
+    border-color: 1px solid var(--primary-color-1);
 }
 
 .btn-google:disabled {

@@ -18,13 +18,26 @@ if (session_status() === PHP_SESSION_NONE) {
 $user_email = $_SESSION['user']['email'] ?? 'unknown';
 $user_id = $_SESSION['user']['id'] ?? null;
 
-// Update user status to 'inactive' and last_login timestamp before logout
+// Update user status to 'inactive' and log the logout activity
 if ($user_id) {
     require_once '../config.php';
+
+    // Update user status to 'inactive' and last_login timestamp before logout
     $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'inactive', last_login = NOW() WHERE id = ?");
     $update_stmt->bind_param("i", $user_id);
     $update_stmt->execute();
     $update_stmt->close();
+
+    // Get user IP address and user agent
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+    // Insert activity log for logout
+    $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'logout', 'User logged out', ?, ?)");
+    $log_stmt->bind_param("iss", $user_id, $ip_address, $user_agent);
+    $log_stmt->execute();
+    $log_stmt->close();
+
     $mysqli->close();
 }
 

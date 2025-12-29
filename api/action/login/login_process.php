@@ -61,6 +61,17 @@ try {
     }
 
     if (!password_verify($password, $user['password'])) {
+        // Get user IP address and user agent for failed login log
+        $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+        // Log failed login attempt without user_id (since credentials are wrong)
+        $description = "Failed login attempt - incorrect password for email: " . $email;
+        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (NULL, 'failed_login', ?, ?, ?)");
+        $log_stmt->bind_param("sss", $description, $ip_address, $user_agent);
+        $log_stmt->execute();
+        $log_stmt->close();
+
         header('Location: ../../../index.php?error=Invalid email or password');
         exit;
     }
@@ -72,6 +83,16 @@ try {
     $update_stmt->bind_param("i", $user['id']);
     $update_stmt->execute();
     $update_stmt->close();
+
+    // Get user IP address and user agent
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+    // Insert activity log for login
+    $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'login', 'User logged in via email/password', ?, ?)");
+    $log_stmt->bind_param("iss", $user['id'], $ip_address, $user_agent);
+    $log_stmt->execute();
+    $log_stmt->close();
 
     // Regenerate session ID for security
     session_regenerate_id(true);
