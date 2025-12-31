@@ -15,15 +15,35 @@
 $user_name = $_SESSION['user']['full_name'] ?? 'Guest User';
 $user_email = $_SESSION['user']['email'] ?? 'guest@example.com';
 $user_role = $_SESSION['user']['role'] ?? 'guest';
-$profile_picture = $_SESSION['user']['profile_picture'] ?? null;
+$header_user_id_for_pic = $_SESSION['user']['id'] ?? null;
 
 // Format role for display
 $role_display = ucfirst(str_replace('_', ' ', $user_role));
 
-// Use Google profile picture if available, otherwise generate avatar
-if ($profile_picture) {
-    $avatar_url = $profile_picture;
+// Fetch profile picture from database
+$profile_picture = null;
+if ($header_user_id_for_pic) {
+    require_once __DIR__ . '/../../api/config.php';
+    $pic_stmt = $mysqli->prepare("SELECT profile_picture FROM crime_department_admin_users WHERE id = ?");
+    $pic_stmt->bind_param("i", $header_user_id_for_pic);
+    $pic_stmt->execute();
+    $pic_result = $pic_stmt->get_result();
+    $pic_data = $pic_result->fetch_assoc();
+    $pic_stmt->close();
+    $profile_picture = $pic_data['profile_picture'] ?? null;
+}
+
+// Set avatar URL - handle both Google URLs and local paths
+if (!empty($profile_picture)) {
+    // Check if it's a Google profile picture URL (starts with http:// or https://)
+    if (preg_match('/^https?:\/\//', $profile_picture)) {
+        $avatar_url = $profile_picture; // Use Google URL directly
+    } else {
+        // Local file path
+        $avatar_url = '../image/profile/' . $profile_picture;
+    }
 } else {
+    // Default to UI Avatars
     $avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($user_name) . '&background=4c8a89&color=fff&size=128';
 }
 

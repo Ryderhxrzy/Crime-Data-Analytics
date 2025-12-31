@@ -43,9 +43,18 @@ if (!$additional_info ||
     $has_incomplete_profile = true;
 }
 
-// Get profile picture from database only
-$profile_picture = $user_data['profile_picture'] ?? null;
-if (!$profile_picture) {
+// Set profile picture path - handle both Google URLs and local paths
+$profile_picture_data = $user_data['profile_picture'] ?? '';
+if (!empty($profile_picture_data)) {
+    // Check if it's a Google profile picture URL (starts with http:// or https://)
+    if (preg_match('/^https?:\/\//', $profile_picture_data)) {
+        $profile_picture = $profile_picture_data; // Use Google URL directly
+    } else {
+        // Local file path
+        $profile_picture = '../image/profile/' . $profile_picture_data;
+    }
+} else {
+    // Default to UI Avatars
     $profile_picture = 'https://ui-avatars.com/api/?name=' . urlencode($user_data['full_name']) . '&background=4c8a89&color=fff&size=256';
 }
 ?>
@@ -95,7 +104,7 @@ if (!$profile_picture) {
                     <div class="profile-header">
                         <div class="profile-avatar-section">
                             <div class="profile-avatar-wrapper">
-                                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="<?php echo htmlspecialchars($user_data['full_name']); ?>" class="profile-avatar">
+                                <img src="<?php echo htmlspecialchars('../image/profile/' .$profile_picture); ?>" alt="<?php echo htmlspecialchars($user_data['full_name']); ?>" class="profile-avatar">
                                 <div class="avatar-badge <?php echo $user_data['status'] === 'active' ? 'status-active' : 'status-inactive'; ?>">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
@@ -283,72 +292,63 @@ if (!$profile_picture) {
                         </div>
                     </div>
 
-                    <!-- Additional Information Section (Editable) -->
-                    <form id="profileForm" method="POST" action="../../api/action/update-profile.php">
-                        <div class="profile-section">
-                            <div class="section-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-info-circle"></i>
-                                    Additional Information
-                                    <?php if ($has_incomplete_profile): ?>
-                                        <span class="badge badge-warning">Incomplete</span>
-                                    <?php endif; ?>
-                                </h3>
+                    <!-- Additional Information Section (Read-only) -->
+                    <div class="profile-section">
+                        <div class="section-header">
+                            <h3 class="section-title">
+                                <i class="fas fa-info-circle"></i>
+                                Additional Information
+                                <?php if ($has_incomplete_profile): ?>
+                                    <span class="badge badge-warning">Incomplete</span>
+                                <?php endif; ?>
+                            </h3>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-phone"></i>
+                                    Phone Number
+                                </label>
+                                <p class="info-value"><?php echo htmlspecialchars($additional_info['phone_number'] ?? 'Not provided'); ?></p>
                             </div>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <label class="info-label">
-                                        <i class="fas fa-user"></i>
-                                        Full Name
-                                    </label>
-                                    <input type="text" name="full_name" class="form-input" value="<?php echo htmlspecialchars($user_data['full_name']); ?>" required>
-                                </div>
-                                <div class="info-item">
-                                    <label class="info-label">
-                                        <i class="fas fa-phone"></i>
-                                        Phone Number
-                                    </label>
-                                    <input type="tel" name="phone_number" class="form-input" value="<?php echo htmlspecialchars($additional_info['phone_number'] ?? ''); ?>" placeholder="Enter phone number">
-                                </div>
-                                <div class="info-item">
-                                    <label class="info-label">
-                                        <i class="fas fa-building"></i>
-                                        Department
-                                    </label>
-                                    <input type="text" name="department" class="form-input" value="<?php echo htmlspecialchars($additional_info['department'] ?? ''); ?>" placeholder="Enter department">
-                                </div>
-                                <div class="info-item">
-                                    <label class="info-label">
-                                        <i class="fas fa-briefcase"></i>
-                                        Position
-                                    </label>
-                                    <input type="text" name="position" class="form-input" value="<?php echo htmlspecialchars($additional_info['position'] ?? ''); ?>" placeholder="Enter position">
-                                </div>
-                                <div class="info-item" style="grid-column: 1 / -1;">
-                                    <label class="info-label">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        Address
-                                    </label>
-                                    <textarea name="address" class="form-input" rows="2" placeholder="Enter your complete address"><?php echo htmlspecialchars($additional_info['address'] ?? ''); ?></textarea>
-                                </div>
-                                <div class="info-item" style="grid-column: 1 / -1;">
-                                    <label class="info-label">
-                                        <i class="fas fa-align-left"></i>
-                                        Bio
-                                    </label>
-                                    <textarea name="bio" class="form-input" rows="4" placeholder="Write a short bio about yourself"><?php echo htmlspecialchars($additional_info['bio'] ?? ''); ?></textarea>
-                                </div>
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-building"></i>
+                                    Department
+                                </label>
+                                <p class="info-value"><?php echo htmlspecialchars($additional_info['department'] ?? 'Not provided'); ?></p>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-briefcase"></i>
+                                    Position
+                                </label>
+                                <p class="info-value"><?php echo htmlspecialchars($additional_info['position'] ?? 'Not provided'); ?></p>
+                            </div>
+                            <div class="info-item">
+                                <label class="info-label">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    Address
+                                </label>
+                                <p class="info-value"><?php echo htmlspecialchars($additional_info['address'] ?? 'Not provided'); ?></p>
+                            </div>
+                            <div class="info-item" style="grid-column: 1 / -1;">
+                                <label class="info-label">
+                                    <i class="fas fa-align-left"></i>
+                                    Bio
+                                </label>
+                                <p class="info-value"><?php echo htmlspecialchars($additional_info['bio'] ?? 'Not provided'); ?></p>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Profile Actions -->
-                        <div class="profile-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i>
-                                Save Profile
-                            </button>
-                        </div>
-                    </form>
+                    <!-- Profile Actions -->
+                    <div class="profile-actions">
+                        <a href="settings.php" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                            Edit Profile
+                        </a>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -387,49 +387,6 @@ if (!$profile_picture) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             });
         }
-
-        // Handle form submission
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-
-            fetch('../../api/action/update-profile.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK'
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An error occurred while updating your profile. Please try again.',
-                    confirmButtonColor: '#4c8a89',
-                    confirmButtonText: 'OK'
-                });
-            });
-        });
     </script>
 </body>
 </html>

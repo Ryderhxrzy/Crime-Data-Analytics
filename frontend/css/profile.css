@@ -313,9 +313,8 @@ textarea.form-input {
 }
 
 .btn-primary:hover {
-    background: var(--secondary-color-1);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(76, 138, 137, 0.3);
 }
 
 .btn-outline {

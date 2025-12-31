@@ -24,6 +24,29 @@ if (!$user_data) {
     exit;
 }
 
+// Fetch additional information
+$stmt = $mysqli->prepare("SELECT phone_number, address, department, position, bio FROM crime_department_admin_information WHERE admin_user_id = ? LIMIT 1");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$additional_info = $result->fetch_assoc();
+$stmt->close();
+
+// Set profile picture path - handle both Google URLs and local paths
+$profile_picture_data = $user_data['profile_picture'] ?? '';
+if (!empty($profile_picture_data)) {
+    // Check if it's a Google profile picture URL (starts with http:// or https://)
+    if (preg_match('/^https?:\/\//', $profile_picture_data)) {
+        $profile_picture = $profile_picture_data; // Use Google URL directly
+    } else {
+        // Local file path
+        $profile_picture = '../image/profile/' . $profile_picture_data;
+    }
+} else {
+    // Default to UI Avatars
+    $profile_picture = 'https://ui-avatars.com/api/?name=' . urlencode($user_data['full_name']) . '&background=4c8a89&color=fff&size=256';
+}
+
 // Static default settings (no database table needed)
 $user_settings = [
     'email_notifications' => 1,
@@ -135,6 +158,38 @@ $php_ext = $is_production ? '' : '.php';
 
                                     <div class="form-group">
                                         <label class="form-label">
+                                            <i class="fas fa-phone"></i>
+                                            Phone Number
+                                        </label>
+                                        <input type="tel" id="phone_number" name="phone_number" class="form-input" value="<?php echo htmlspecialchars($additional_info['phone_number'] ?? ''); ?>">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            Address
+                                        </label>
+                                        <input type="text" id="address" name="address" class="form-input" value="<?php echo htmlspecialchars($additional_info['address'] ?? ''); ?>">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-building"></i>
+                                            Department
+                                        </label>
+                                        <input type="text" id="department" name="department" class="form-input" value="<?php echo htmlspecialchars($additional_info['department'] ?? ''); ?>">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-briefcase"></i>
+                                            Position
+                                        </label>
+                                        <input type="text" id="position" name="position" class="form-input" value="<?php echo htmlspecialchars($additional_info['position'] ?? ''); ?>">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">
                                             <i class="fas fa-shield-alt"></i>
                                             Role
                                         </label>
@@ -149,12 +204,26 @@ $php_ext = $is_production ? '' : '.php';
                                         </label>
                                         <input type="text" class="form-input" value="<?php echo ucfirst($user_data['registration_type']); ?>" readonly>
                                     </div>
+
+                                    <div class="form-group" style="grid-column: 1 / -1;">
+                                        <label class="form-label">
+                                            <i class="fas fa-info-circle"></i>
+                                            Bio
+                                        </label>
+                                        <textarea id="bio" name="bio" class="form-input" rows="4" style="resize: vertical;"><?php echo htmlspecialchars($additional_info['bio'] ?? ''); ?></textarea>
+                                    </div>
                                 </div>
 
                                 <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i>
-                                        Save Changes
+                                    <button type="submit" class="btn-login">
+                                        <span class="btn-text">
+                                            <i class="fas fa-save"></i>
+                                            Save Changes
+                                        </span>
+                                        <span class="btn-loader" style="display: none;">
+                                            <span class="spinner"></span>
+                                            Saving...
+                                        </span>
                                     </button>
                                 </div>
                             </form>
@@ -172,15 +241,17 @@ $php_ext = $is_production ? '' : '.php';
 
                             <div class="profile-picture-section">
                                 <div class="current-picture">
-                                    <img src="<?php echo htmlspecialchars($user_data['profile_picture'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user_data['full_name']) . '&background=4c8a89&color=fff&size=256'); ?>" alt="Profile Picture" id="profilePicturePreview">
+                                    <img src="<?php echo htmlspecialchars('../image/profile/' . $profile_picture); ?>" alt="Profile Picture" id="profilePicturePreview">
                                 </div>
                                 <div class="picture-actions">
-                                    <button type="button" class="btn btn-secondary" id="uploadPictureBtn">
-                                        <i class="fas fa-upload"></i>
-                                        Upload New Picture
+                                    <button type="button" class="btn-login" id="uploadPictureBtn">
+                                        <span class="btn-text">
+                                            <i class="fas fa-upload"></i>
+                                            Upload New Picture
+                                        </span>
                                     </button>
                                     <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
-                                    <small class="form-hint">Recommended: Square image, at least 256x256px</small>
+                                    <small class="form-hint">Recommended: Square image, at least 256x256px. Max 5MB</small>
                                 </div>
                             </div>
                         </div>
@@ -243,9 +314,15 @@ $php_ext = $is_production ? '' : '.php';
                                 </div>
 
                                 <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i>
-                                        Update Password
+                                    <button type="submit" class="btn-login">
+                                        <span class="btn-text">
+                                            <i class="fas fa-save"></i>
+                                            Update Password
+                                        </span>
+                                        <span class="btn-loader" style="display: none;">
+                                            <span class="spinner"></span>
+                                            Updating...
+                                        </span>
                                     </button>
                                 </div>
                             </form>
@@ -325,9 +402,11 @@ $php_ext = $is_production ? '' : '.php';
                                 </div>
                             </div>
 
-                            <button type="button" class="btn btn-secondary" id="logoutAllBtn">
-                                <i class="fas fa-sign-out-alt"></i>
-                                Logout All Other Sessions
+                            <button type="button" class="btn-login" id="logoutAllBtn">
+                                <span class="btn-text">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout All Other Sessions
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -436,10 +515,16 @@ $php_ext = $is_production ? '' : '.php';
                                     </div>
                                 </div>
 
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i>
-                                        Save Notification Settings
+                                <div class="form-actions" style="margin-top: 2rem;">
+                                    <button type="submit" class="btn-login">
+                                        <span class="btn-text">
+                                            <i class="fas fa-save"></i>
+                                            Save Notification Settings
+                                        </span>
+                                        <span class="btn-loader" style="display: none;">
+                                            <span class="spinner"></span>
+                                            Saving...
+                                        </span>
                                     </button>
                                 </div>
                             </form>
@@ -504,9 +589,15 @@ $php_ext = $is_production ? '' : '.php';
                                 </div>
 
                                 <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i>
-                                        Save Preferences
+                                    <button type="submit" class="btn-login">
+                                        <span class="btn-text">
+                                            <i class="fas fa-save"></i>
+                                            Save Preferences
+                                        </span>
+                                        <span class="btn-loader" style="display: none;">
+                                            <span class="spinner"></span>
+                                            Saving...
+                                        </span>
                                     </button>
                                 </div>
                             </form>
@@ -530,9 +621,11 @@ $php_ext = $is_production ? '' : '.php';
                                             Permanently delete your account and all associated data. This action cannot be undone.
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-danger" id="deleteAccountBtn">
-                                        <i class="fas fa-trash-alt"></i>
-                                        Delete Account
+                                    <button type="button" class="btn-login" id="deleteAccountBtn" style="background-color: #ef4444; border-color: #ef4444;">
+                                        <span class="btn-text">
+                                            <i class="fas fa-trash-alt"></i>
+                                            Delete Account
+                                        </span>
                                     </button>
                                 </div>
                             </div>
@@ -545,8 +638,6 @@ $php_ext = $is_production ? '' : '.php';
     </div>
 
     <script>
-        // Environment configuration
-        const PHP_EXT = '<?php echo $php_ext; ?>';
 
         // Tab switching functionality
         document.querySelectorAll('.settings-tab').forEach(tab => {
@@ -588,11 +679,52 @@ $php_ext = $is_production ? '' : '.php';
         document.getElementById('accountForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            Swal.fire({
-                icon: 'info',
-                title: 'Feature Not Available',
-                text: 'Account settings update is currently disabled. Please use the Profile page to update your information.',
-                confirmButtonColor: '#4c8a89'
+            const btn = this.querySelector('button[type="submit"]');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoader = btn.querySelector('.btn-loader');
+
+            // Show loader
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'flex';
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+
+            fetch('../../api/action/update-account-settings.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#4c8a89'
+                });
+            })
+            .finally(() => {
+                // Hide loader
+                btnText.style.display = 'flex';
+                btnLoader.style.display = 'none';
+                btn.disabled = false;
             });
         });
 
@@ -706,6 +838,7 @@ $php_ext = $is_production ? '' : '.php';
                     text: 'Please select an image file',
                     confirmButtonColor: '#4c8a89'
                 });
+                this.value = '';
                 return;
             }
 
@@ -717,18 +850,65 @@ $php_ext = $is_production ? '' : '.php';
                     text: 'File size must be less than 5MB',
                     confirmButtonColor: '#4c8a89'
                 });
+                this.value = '';
                 return;
             }
 
+            // Show loading
             Swal.fire({
-                icon: 'info',
-                title: 'Feature Not Available',
-                text: 'Profile picture upload is currently disabled. Please use the Profile page to update your picture.',
-                confirmButtonColor: '#4c8a89'
+                title: 'Uploading...',
+                text: 'Please wait while we upload your profile picture',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            // Clear the file input
-            this.value = '';
+            // Upload file
+            const formData = new FormData();
+            formData.append('profile_picture', file);
+
+            fetch('../../api/action/upload-profile-picture.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update preview image
+                    document.getElementById('profilePicturePreview').src = data.url + '?' + new Date().getTime();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    }).then(() => {
+                        // Reload page to update all profile pictures
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while uploading. Please try again.',
+                    confirmButtonColor: '#4c8a89'
+                });
+            })
+            .finally(() => {
+                // Clear the file input
+                e.target.value = '';
+            });
         });
 
         // Logout all sessions
