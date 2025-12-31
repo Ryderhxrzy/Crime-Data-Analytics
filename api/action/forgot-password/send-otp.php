@@ -8,12 +8,20 @@
 ob_start();
 
 session_start();
+
+// Debug logging
+error_log("=== SEND OTP START ===");
+error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
+error_log("POST data: " . print_r($_POST, true));
+
 require_once '../../config.php';
 require_once '../../utils/mailer.php';
 
 // Clean any previous output and set JSON header
 ob_clean();
 header('Content-Type: application/json');
+
+error_log("Headers sent, JSON content type set");
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
@@ -82,16 +90,22 @@ try {
     $insert_stmt->close();
 
     // Send OTP email
+    error_log("Attempting to send OTP email to: " . $email);
     try {
         $mailer = new Mailer();
         $mailer->sendOTP($email, $user['full_name'] ?? 'User', $otp);
+        error_log("OTP email sent successfully");
     } catch (Exception $e) {
         error_log("Failed to send OTP email: " . $e->getMessage());
+        error_log("Exception trace: " . $e->getTraceAsString());
+        ob_clean();
         echo json_encode(['success' => false, 'message' => 'Failed to send OTP email. Please try again later.']);
+        ob_end_flush();
         exit;
     }
 
     // Log activity
+    error_log("Logging activity to database");
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
     $description = "Password reset OTP sent to email: " . $email;
@@ -99,20 +113,31 @@ try {
     $log_stmt->bind_param("isss", $user['id'], $description, $ip_address, $user_agent);
     $log_stmt->execute();
     $log_stmt->close();
+    error_log("Activity logged successfully");
 
     // Ensure clean output
+    error_log("Preparing success response");
     ob_clean();
-    echo json_encode([
+    $response = [
         'success' => true,
         'message' => 'OTP has been sent to your email address. Please check your inbox.'
-    ]);
+    ];
+    $json = json_encode($response);
+    error_log("JSON response: " . $json);
+    echo $json;
     ob_end_flush();
+    error_log("=== SEND OTP SUCCESS END ===");
 
 } catch (Exception $e) {
+    error_log("=== SEND OTP EXCEPTION ===");
     error_log("Send OTP error: " . $e->getMessage());
+    error_log("Exception trace: " . $e->getTraceAsString());
     ob_clean();
-    echo json_encode(['success' => false, 'message' => 'An error occurred. Please try again.']);
+    $errorResponse = ['success' => false, 'message' => 'An error occurred. Please try again.'];
+    error_log("Error JSON response: " . json_encode($errorResponse));
+    echo json_encode($errorResponse);
     ob_end_flush();
+    error_log("=== SEND OTP EXCEPTION END ===");
 }
 
 $mysqli->close();
