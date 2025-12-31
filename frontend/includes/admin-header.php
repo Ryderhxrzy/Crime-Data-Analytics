@@ -615,5 +615,23 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('User profile clicked');
         });
     }
+
+    // Mark active page in dropdown
+    const currentPath = window.location.pathname;
+    const dropdownItems = document.querySelectorAll('.user-profile-dropdown .dropdown-item');
+
+    dropdownItems.forEach(item => {
+        const href = item.getAttribute('href');
+        if (href) {
+            // Normalize paths for comparison
+            const itemPath = href.replace(/^\.\.\//, '').replace(/^\//, '');
+            const currentNormalizedPath = currentPath.replace(/^.*\//, '');
+
+            // Check if current page matches this dropdown item
+            if (itemPath.includes(currentNormalizedPath) || currentNormalizedPath.includes(itemPath.split('/').pop())) {
+                item.classList.add('active');
+            }
+        }
+    });
 });
 </script>

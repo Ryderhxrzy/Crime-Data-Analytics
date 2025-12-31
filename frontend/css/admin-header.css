@@ -322,6 +322,15 @@
     text-decoration: none;
 }
 
+.dropdown-item.active {
+    background-color: var(--primary-color-1);
+    color: white;
+}
+
+.dropdown-item.active i {
+    color: white;
+}
+
 .dropdown-item i {
     width: 16px;
     font-size: 0.875rem;
