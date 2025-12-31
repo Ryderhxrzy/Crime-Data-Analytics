@@ -411,7 +411,18 @@ unset($_SESSION['flash_success']);
                     body: 'email=' + encodeURIComponent(email)
                 });
 
-                const data = await response.json();
+                // Get response text first to check for errors
+                const responseText = await response.text();
+
+                // Try to parse as JSON
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Response Text:', responseText);
+                    throw new Error('Invalid server response. Please check server logs.');
+                }
 
                 if (data.success) {
                     // Show OTP form
@@ -444,10 +455,11 @@ unset($_SESSION['flash_success']);
                     });
                 }
             } catch (error) {
+                console.error('Send OTP Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: 'An error occurred. Please try again.',
+                    text: error.message || 'An error occurred. Please try again.',
                     confirmButtonColor: '#4c8a89',
                     confirmButtonText: 'OK'
                 });

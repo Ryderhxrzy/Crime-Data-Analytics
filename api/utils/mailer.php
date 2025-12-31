@@ -7,7 +7,13 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+// Load vendor autoload from project root
+$vendorPath = __DIR__ . '/../../vendor/autoload.php';
+if (!file_exists($vendorPath)) {
+    error_log("Vendor autoload not found at: " . $vendorPath);
+    throw new Exception("PHPMailer dependencies not found. Please run 'composer install'.");
+}
+require_once $vendorPath;
 require_once __DIR__ . '/../config.php';
 
 class Mailer {

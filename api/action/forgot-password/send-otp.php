@@ -100,14 +100,19 @@ try {
     $log_stmt->execute();
     $log_stmt->close();
 
+    // Ensure clean output
+    ob_clean();
     echo json_encode([
         'success' => true,
         'message' => 'OTP has been sent to your email address. Please check your inbox.'
     ]);
+    ob_end_flush();
 
 } catch (Exception $e) {
     error_log("Send OTP error: " . $e->getMessage());
+    ob_clean();
     echo json_encode(['success' => false, 'message' => 'An error occurred. Please try again.']);
+    ob_end_flush();
 }
 
 $mysqli->close();
