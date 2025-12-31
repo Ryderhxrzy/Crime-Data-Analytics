@@ -4,10 +4,15 @@
  * Generates and sends a 6-digit OTP to the user's email
  */
 
+// Prevent any output before JSON response
+ob_start();
+
 session_start();
 require_once '../../config.php';
 require_once '../../utils/mailer.php';
 
+// Clean any previous output and set JSON header
+ob_clean();
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -34,7 +39,7 @@ if ($mysqli->connect_error) {
 
 try {
     // Check if user exists
-    $stmt = $mysqli->prepare("SELECT id, email, registration_type, account_status FROM crime_department_admin_users WHERE email = ? LIMIT 1");
+    $stmt = $mysqli->prepare("SELECT id, email, full_name, registration_type, account_status FROM crime_department_admin_users WHERE email = ? LIMIT 1");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();

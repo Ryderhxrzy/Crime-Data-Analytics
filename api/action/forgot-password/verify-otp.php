@@ -4,10 +4,15 @@
  * Verifies the OTP and generates a password reset token
  */
 
+// Prevent any output before JSON response
+ob_start();
+
 session_start();
 require_once '../../config.php';
 require_once '../../utils/mailer.php';
 
+// Clean any previous output and set JSON header
+ob_clean();
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
