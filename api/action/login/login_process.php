@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once '../../config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -129,13 +130,14 @@ try {
 
     // Set session cookie parameters for security (1 hour)
     $cookie_params = session_get_cookie_params();
+    $is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
     setcookie(
         session_name(),
         session_id(),
         time() + 3600, // 1 hour expiry
         $cookie_params['path'],
         $cookie_params['domain'],
-        true, // Secure - requires HTTPS in production
+        $is_https, // Secure - only use HTTPS flag when actually on HTTPS
         true  // HttpOnly - prevents JavaScript access
     );
 
