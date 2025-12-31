@@ -6,6 +6,7 @@
 
 session_start();
 require_once '../../config.php';
+require_once '../../utils/mailer.php';
 
 header('Content-Type: application/json');
 
@@ -68,6 +69,21 @@ try {
 
     // Verify OTP
     if ($otp !== $otp_data['otp_code']) {
+        // Increment attempt count
+        $attempt_stmt = $mysqli->prepare("UPDATE crime_department_otp_verification SET attempt_count = attempt_count + 1, last_attempt_at = NOW() WHERE id = ?");
+        $attempt_stmt->bind_param("i", $otp_data['id']);
+        $attempt_stmt->execute();
+        $attempt_stmt->close();
+
+        // Log failed attempt
+        $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+        $description = "Failed OTP verification attempt for email: " . $email;
+        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'password_reset_otp_failed', ?, ?, ?)");
+        $log_stmt->bind_param("isss", $otp_data['admin_user_id'], $description, $ip_address, $user_agent);
+        $log_stmt->execute();
+        $log_stmt->close();
+
         echo json_encode(['success' => false, 'message' => 'Invalid OTP. Please try again.']);
         exit;
     }
@@ -94,10 +110,27 @@ try {
     $insert_stmt->execute();
     $insert_stmt->close();
 
+    // Get user full name for email
+    $user_stmt = $mysqli->prepare("SELECT full_name FROM crime_department_admin_users WHERE id = ?");
+    $user_stmt->bind_param("i", $otp_data['admin_user_id']);
+    $user_stmt->execute();
+    $user_result = $user_stmt->get_result();
+    $user_data = $user_result->fetch_assoc();
+    $user_stmt->close();
+
+    // Send reset link email
+    try {
+        $mailer = new Mailer();
+        $mailer->sendResetLink($email, $user_data['full_name'] ?? 'User', $reset_token);
+    } catch (Exception $e) {
+        error_log("Failed to send reset link email: " . $e->getMessage());
+        // Continue anyway - user can still use the token
+    }
+
     // Log activity
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-    $description = "Password reset OTP verified for email: " . $email;
+    $description = "Password reset OTP verified and reset link sent for email: " . $email;
     $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'password_reset_otp_verified', ?, ?, ?)");
     $log_stmt->bind_param("isss", $otp_data['admin_user_id'], $description, $ip_address, $user_agent);
     $log_stmt->execute();
@@ -105,7 +138,7 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'OTP verified successfully!',
+        'message' => 'OTP verified successfully! Check your email for the password reset link.',
         'token' => $reset_token
     ]);
 
