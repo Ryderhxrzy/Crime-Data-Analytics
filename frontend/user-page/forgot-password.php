@@ -71,40 +71,39 @@ unset($_SESSION['flash_success']);
                 <!-- Step 2: OTP Verification Form -->
                 <form id="otpForm" class="login-form" style="display: none;" novalidate>
                     <input type="hidden" id="verifyEmail" name="email">
+                    <input type="hidden" id="otpExpireTime" name="otpExpireTime">
 
-                    <!-- OTP Field -->
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input
-                                type="text"
-                                id="otp"
-                                name="otp"
-                                class="form-input"
-                                placeholder="Enter 6-digit OTP"
-                                required
-                                maxlength="6"
-                                autocomplete="off"
-                            >
-                            <span class="input-icon">
-                                <i class="fas fa-key"></i>
-                            </span>
+                    <!-- OTP Info -->
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 8px;">
+                            OTP sent to <strong id="displayEmail" style="color: #4c8a89;"></strong>
+                        </p>
+
+                        <!-- Timer Display -->
+                        <div id="timerContainer" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px;">
+                            <i class="fas fa-clock" style="color: #4c8a89; font-size: 1rem;"></i>
+                            <span id="otpTimer" style="color: #4c8a89; font-weight: 600; font-size: 1rem;">10:00</span>
                         </div>
-                        <span class="field-error" id="otpError"></span>
-                        <small style="color: #6b7280; font-size: 0.875rem; margin-top: 5px; display: block;">
-                            OTP sent to <span id="displayEmail" style="font-weight: 600;"></span>
-                        </small>
+                        <p id="timerExpired" style="color: #ef4444; font-size: 0.875rem; margin-top: 8px; display: none; font-weight: 500;">
+                            <i class="fas fa-exclamation-circle"></i> OTP has expired. Please request a new one.
+                        </p>
                     </div>
 
-                    <!-- Resend OTP -->
-                    <div class="form-options" style="justify-content: center; margin-bottom: 20px;">
-                        <button type="button" id="resendOtpButton" class="forgot-password" style="background: none; border: none; cursor: pointer; text-decoration: none;">
-                            <i class="fas fa-redo" style="margin-right: 5px;"></i>
-                            Resend OTP
-                        </button>
+                    <!-- OTP Input Boxes -->
+                    <div class="form-group" style="margin-bottom: 30px;">
+                        <div class="otp-input-container" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" class="otp-box" maxlength="1" data-index="0" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                            <input type="text" class="otp-box" maxlength="1" data-index="1" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                            <input type="text" class="otp-box" maxlength="1" data-index="2" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                            <input type="text" class="otp-box" maxlength="1" data-index="3" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                            <input type="text" class="otp-box" maxlength="1" data-index="4" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                            <input type="text" class="otp-box" maxlength="1" data-index="5" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                        </div>
+                        <span class="field-error" id="otpError" style="display: block; text-align: center;"></span>
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" class="btn-login" id="verifyOtpButton">
+                    <button type="submit" class="btn-login" id="verifyOtpButton" style="margin-bottom: 20px;">
                         <span class="btn-text">Verify OTP</span>
                         <span class="btn-loader" style="display: none;">
                             <span class="spinner"></span>
@@ -112,11 +111,20 @@ unset($_SESSION['flash_success']);
                         </span>
                     </button>
 
+                    <!-- Resend OTP -->
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 8px;">Didn't receive the code?</p>
+                        <button type="button" id="resendOtpButton" class="resend-btn" style="background: none; border: none; color: #4c8a89; cursor: pointer; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.3s;">
+                            <i class="fas fa-redo" style="margin-right: 5px;"></i>
+                            <span id="resendText">Resend OTP</span>
+                        </button>
+                    </div>
+
                     <!-- Back to Email -->
-                    <div class="form-options" style="justify-content: center; margin-top: 20px;">
-                        <button type="button" id="backToEmailButton" class="forgot-password" style="background: none; border: none; cursor: pointer; text-decoration: none;">
+                    <div style="text-align: center; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                        <button type="button" id="backToEmailButton" class="forgot-password" style="background: none; border: none; cursor: pointer; text-decoration: none; color: #6b7280; font-size: 0.875rem;">
                             <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
-                            Change Email
+                            Change Email Address
                         </button>
                     </div>
                 </form>
@@ -126,6 +134,103 @@ unset($_SESSION['flash_success']);
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* OTP Input Boxes Styling */
+        .otp-box {
+            width: 45px;
+            height: 55px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
+            color: #1f2937;
+            caret-color: #4c8a89;
+        }
+
+        .otp-box:focus {
+            border-color: #4c8a89;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(76, 138, 137, 0.1);
+            transform: scale(1.05);
+        }
+
+        .otp-box:disabled {
+            background-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        .otp-box.error {
+            border-color: #ef4444;
+            animation: shake 0.3s;
+        }
+
+        .otp-box.success {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .otp-box {
+                width: 38px;
+                height: 48px;
+                font-size: 1.25rem;
+            }
+
+            .otp-input-container {
+                gap: 6px !important;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .otp-box {
+                width: 35px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+
+            .otp-input-container {
+                gap: 4px !important;
+            }
+        }
+
+        /* Timer Styles */
+        #otpTimer.warning {
+            color: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+
+        #otpTimer.danger {
+            color: #ef4444;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Resend Button Hover */
+        .resend-btn:hover {
+            color: #3d6e6d !important;
+            text-decoration: underline !important;
+        }
+
+        .resend-btn:disabled {
+            color: #9ca3af !important;
+            cursor: not-allowed !important;
+        }
+    </style>
     <script>
         // Handle flash messages from PHP session
         <?php if ($flash_success): ?>
@@ -147,6 +252,124 @@ unset($_SESSION['flash_success']);
             confirmButtonText: 'OK'
         });
         <?php endif; ?>
+
+        // Global timer variables
+        let otpTimerInterval = null;
+        let otpExpiryTime = null;
+
+        // OTP Box Handling
+        const otpBoxes = document.querySelectorAll('.otp-box');
+
+        otpBoxes.forEach((box, index) => {
+            // Auto-focus next box on input
+            box.addEventListener('input', function(e) {
+                // Only allow numbers
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                // Remove error styling
+                otpBoxes.forEach(b => b.classList.remove('error'));
+                document.getElementById('otpError').textContent = '';
+
+                // Move to next box if current is filled
+                if (this.value.length === 1 && index < 5) {
+                    otpBoxes[index + 1].focus();
+                }
+            });
+
+            // Handle backspace
+            box.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    otpBoxes[index - 1].focus();
+                }
+
+                // Handle paste
+                if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    navigator.clipboard.readText().then(text => {
+                        const numbers = text.replace(/[^0-9]/g, '').slice(0, 6);
+                        numbers.split('').forEach((num, i) => {
+                            if (otpBoxes[i]) {
+                                otpBoxes[i].value = num;
+                            }
+                        });
+                        if (numbers.length === 6) {
+                            otpBoxes[5].focus();
+                        }
+                    });
+                }
+            });
+
+            // Select all on focus
+            box.addEventListener('focus', function() {
+                this.select();
+            });
+        });
+
+        // Get OTP value from boxes
+        function getOtpValue() {
+            return Array.from(otpBoxes).map(box => box.value).join('');
+        }
+
+        // Clear OTP boxes
+        function clearOtpBoxes() {
+            otpBoxes.forEach(box => {
+                box.value = '';
+                box.classList.remove('error', 'success');
+            });
+            otpBoxes[0].focus();
+        }
+
+        // OTP Timer Function
+        function startOtpTimer(durationInSeconds = 600) {
+            // Clear any existing timer
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+            }
+
+            // Set expiry time
+            otpExpiryTime = Date.now() + (durationInSeconds * 1000);
+            document.getElementById('otpExpireTime').value = otpExpiryTime;
+
+            const timerElement = document.getElementById('otpTimer');
+            const timerExpired = document.getElementById('timerExpired');
+            const resendButton = document.getElementById('resendOtpButton');
+            const verifyButton = document.getElementById('verifyOtpButton');
+
+            // Reset display
+            timerExpired.style.display = 'none';
+            timerElement.classList.remove('warning', 'danger');
+
+            otpTimerInterval = setInterval(() => {
+                const now = Date.now();
+                const remaining = Math.max(0, otpExpiryTime - now);
+                const seconds = Math.floor(remaining / 1000);
+
+                if (seconds <= 0) {
+                    clearInterval(otpTimerInterval);
+                    timerElement.textContent = '0:00';
+                    timerElement.classList.add('danger');
+                    timerExpired.style.display = 'block';
+                    verifyButton.disabled = true;
+                    otpBoxes.forEach(box => box.disabled = true);
+                    return;
+                }
+
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                timerElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+
+                // Color coding
+                if (seconds <= 60) {
+                    timerElement.classList.remove('warning');
+                    timerElement.classList.add('danger');
+                } else if (seconds <= 180) {
+                    timerElement.classList.remove('danger');
+                    timerElement.classList.add('warning');
+                } else {
+                    timerElement.classList.remove('warning', 'danger');
+                }
+            }, 1000);
+        }
 
         // Step 1: Email Form Submission
         document.getElementById('emailForm').addEventListener('submit', async function(e) {
@@ -199,6 +422,10 @@ unset($_SESSION['flash_success']);
                     document.getElementById('formTitle').textContent = 'Verify OTP';
                     document.getElementById('formSubtitle').textContent = 'Enter the 6-digit code sent to your email';
 
+                    // Start timer and focus first OTP box
+                    startOtpTimer(600); // 10 minutes
+                    clearOtpBoxes();
+
                     Swal.fire({
                         icon: 'success',
                         title: 'OTP Sent!',
@@ -237,7 +464,7 @@ unset($_SESSION['flash_success']);
             e.preventDefault();
 
             const email = document.getElementById('verifyEmail').value;
-            const otp = document.getElementById('otp').value.trim();
+            const otp = getOtpValue();
             const otpError = document.getElementById('otpError');
             const verifyOtpButton = document.getElementById('verifyOtpButton');
             const btnText = verifyOtpButton.querySelector('.btn-text');
@@ -245,15 +472,19 @@ unset($_SESSION['flash_success']);
 
             // Clear previous errors
             otpError.textContent = '';
+            otpBoxes.forEach(box => box.classList.remove('error'));
 
             // Validate OTP
-            if (!otp) {
-                otpError.textContent = 'OTP is required';
+            if (!otp || otp.length === 0) {
+                otpError.textContent = 'Please enter the OTP code';
+                otpBoxes.forEach(box => box.classList.add('error'));
+                otpBoxes[0].focus();
                 return;
             }
 
             if (otp.length !== 6) {
-                otpError.textContent = 'OTP must be 6 digits';
+                otpError.textContent = 'Please enter all 6 digits';
+                otpBoxes.forEach(box => box.classList.add('error'));
                 return;
             }
 
@@ -261,6 +492,7 @@ unset($_SESSION['flash_success']);
             btnText.style.display = 'none';
             btnLoader.style.display = 'inline-flex';
             verifyOtpButton.disabled = true;
+            otpBoxes.forEach(box => box.disabled = true);
 
             try {
                 // Verify OTP
@@ -275,6 +507,14 @@ unset($_SESSION['flash_success']);
                 const data = await response.json();
 
                 if (data.success) {
+                    // Success styling
+                    otpBoxes.forEach(box => box.classList.add('success'));
+
+                    // Stop timer
+                    if (otpTimerInterval) {
+                        clearInterval(otpTimerInterval);
+                    }
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
@@ -287,6 +527,10 @@ unset($_SESSION['flash_success']);
                         window.location.href = 'reset-password.php?token=' + data.token;
                     });
                 } else {
+                    // Error styling
+                    otpBoxes.forEach(box => box.classList.add('error'));
+                    otpError.textContent = data.message;
+
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
@@ -294,6 +538,10 @@ unset($_SESSION['flash_success']);
                         confirmButtonColor: '#4c8a89',
                         confirmButtonText: 'OK'
                     });
+
+                    // Re-enable boxes and clear
+                    otpBoxes.forEach(box => box.disabled = false);
+                    setTimeout(() => clearOtpBoxes(), 1000);
                 }
             } catch (error) {
                 Swal.fire({
@@ -303,6 +551,7 @@ unset($_SESSION['flash_success']);
                     confirmButtonColor: '#4c8a89',
                     confirmButtonText: 'OK'
                 });
+                otpBoxes.forEach(box => box.disabled = false);
             } finally {
                 // Reset button state
                 btnText.style.display = 'inline';
@@ -315,7 +564,11 @@ unset($_SESSION['flash_success']);
         document.getElementById('resendOtpButton').addEventListener('click', async function() {
             const email = document.getElementById('verifyEmail').value;
             const button = this;
+            const resendText = document.getElementById('resendText');
+            const originalText = resendText.textContent;
+
             button.disabled = true;
+            resendText.textContent = 'Sending...';
 
             try {
                 const response = await fetch('../../api/action/forgot-password/send-otp.php', {
@@ -329,6 +582,14 @@ unset($_SESSION['flash_success']);
                 const data = await response.json();
 
                 if (data.success) {
+                    // Clear boxes and restart timer
+                    clearOtpBoxes();
+                    startOtpTimer(600); // 10 minutes
+
+                    // Re-enable verify button and boxes
+                    document.getElementById('verifyOtpButton').disabled = false;
+                    otpBoxes.forEach(box => box.disabled = false);
+
                     Swal.fire({
                         icon: 'success',
                         title: 'OTP Resent!',
@@ -356,21 +617,29 @@ unset($_SESSION['flash_success']);
                 });
             } finally {
                 button.disabled = false;
+                resendText.textContent = originalText;
             }
         });
 
         // Back to Email
         document.getElementById('backToEmailButton').addEventListener('click', function() {
+            // Stop timer
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+            }
+
+            // Clear and reset form
+            clearOtpBoxes();
             document.getElementById('otpForm').style.display = 'none';
             document.getElementById('emailForm').style.display = 'block';
             document.getElementById('formTitle').textContent = 'Forgot Password?';
             document.getElementById('formSubtitle').textContent = "Enter your email address and we'll send you an OTP";
-            document.getElementById('otp').value = '';
-        });
+            document.getElementById('otpError').textContent = '';
 
-        // Allow only numbers in OTP field
-        document.getElementById('otp').addEventListener('input', function(e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
+            // Reset timer display
+            document.getElementById('otpTimer').textContent = '10:00';
+            document.getElementById('otpTimer').classList.remove('warning', 'danger');
+            document.getElementById('timerExpired').style.display = 'none';
         });
     </script>
 </body>

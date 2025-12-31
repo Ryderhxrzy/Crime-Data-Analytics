@@ -13,8 +13,6 @@ const loginButton = document.getElementById('loginButton');
 const togglePasswordBtn = document.getElementById('togglePassword');
 const emailError = document.getElementById('emailError');
 const passwordError = document.getElementById('passwordError');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 const googleLoginButton = document.getElementById('googleLoginButton');
 
 // ===================================
@@ -80,22 +78,6 @@ function showFormError(message) {
         confirmButtonColor: '#4c8a89',
         confirmButtonText: 'OK'
     });
-}
-
-/**
- * Show loading overlay (reusable component)
- */
-function showLoadingOverlay(text = 'Processing...') {
-    const loadingText = loadingOverlay.querySelector('.loading-text');
-    loadingText.textContent = text;
-    loadingOverlay.style.display = 'flex';
-}
-
-/**
- * Hide loading overlay
- */
-function hideLoadingOverlay() {
-    loadingOverlay.style.display = 'none';
 }
 
 /**
@@ -203,37 +185,6 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 // ===================================
-// FORGOT PASSWORD HANDLER
-// ===================================
-
-forgotPasswordLink.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    const email = emailInput.value.trim();
-
-    if (!email) {
-        showFormError('Please enter your email address first');
-        emailInput.focus();
-        return;
-    }
-
-    if (!validateEmail(email)) {
-        showFormError('Please enter a valid email address');
-        emailInput.focus();
-        return;
-    }
-
-    // Show loading
-    showLoadingOverlay('Sending password reset email...');
-
-    // Simulate sending reset email
-    setTimeout(() => {
-        hideLoadingOverlay();
-        alert(`Password reset link has been sent to ${email}\n\n(Static demo - no email sent)`);
-    }, 1500);
-});
-
-// ===================================
 // AUTO-FILL REMEMBERED EMAIL
 // ===================================
 
@@ -306,10 +257,3 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('='.repeat(50));
 });
 
-// ===================================
-// EXPORT LOADING OVERLAY FUNCTIONS
-// (For use in other pages)
-// ===================================
-
-window.showLoading = showLoadingOverlay;
-window.hideLoading = hideLoadingOverlay;
