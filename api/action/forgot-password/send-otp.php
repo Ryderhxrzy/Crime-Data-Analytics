@@ -6,6 +6,7 @@
 
 session_start();
 require_once '../../config.php';
+require_once '../../utils/mailer.php';
 
 header('Content-Type: application/json');
 
@@ -75,6 +76,16 @@ try {
     $insert_stmt->execute();
     $insert_stmt->close();
 
+    // Send OTP email
+    try {
+        $mailer = new Mailer();
+        $mailer->sendOTP($email, $user['full_name'] ?? 'User', $otp);
+    } catch (Exception $e) {
+        error_log("Failed to send OTP email: " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to send OTP email. Please try again later.']);
+        exit;
+    }
+
     // Log activity
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
@@ -84,14 +95,9 @@ try {
     $log_stmt->execute();
     $log_stmt->close();
 
-    // TODO: Send email with OTP
-    // For now, we'll just log the OTP
-    // In production, integrate with an email service (PHPMailer, SendGrid, etc.)
-    error_log("Password Reset OTP for " . $email . ": " . $otp);
-
     echo json_encode([
         'success' => true,
-        'message' => 'OTP has been sent to your email address. Please check your inbox. (For testing: check error log)'
+        'message' => 'OTP has been sent to your email address. Please check your inbox.'
     ]);
 
 } catch (Exception $e) {
