@@ -154,8 +154,7 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'OTP verified successfully! Check your email for the password reset link.',
-        'token' => $reset_token
+        'message' => 'OTP verified successfully! A password reset link has been sent to your email.'
     ]);
 
 } catch (Exception $e) {

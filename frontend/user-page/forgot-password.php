@@ -517,14 +517,15 @@ unset($_SESSION['flash_success']);
 
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success!',
-                        text: 'OTP verified! Redirecting to reset password...',
+                        title: 'OTP Verified!',
+                        text: 'A password reset link has been sent to your email. Please check your inbox and follow the link to reset your password.',
                         confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK',
-                        timer: 2000
+                        confirmButtonText: 'Go to Login',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
                     }).then(() => {
-                        // Redirect to reset password page
-                        window.location.href = 'reset-password.php?token=' + data.token;
+                        // Redirect to login page
+                        window.location.href = '../../index.php';
                     });
                 } else {
                     // Error styling
