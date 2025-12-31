@@ -1,6 +1,7 @@
 # Environment and Database
 .env
 db.sql
+.htaccess
 
 # Dependencies
 node_modules/
