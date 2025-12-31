@@ -3,6 +3,22 @@
  * Simplified Admin Footer Component
  * Include this file in your pages: <?php include 'sidebar/admin-footer.php'; ?>
  */
+
+// Fetch user theme setting if user is logged in
+$footer_theme = 'light'; // Default theme
+if (isset($_SESSION['user']['id']) && isset($mysqli)) {
+    $footer_user_id = $_SESSION['user']['id'];
+    $footer_settings_stmt = $mysqli->prepare("SELECT theme FROM crime_department_user_settings WHERE admin_user_id = ? LIMIT 1");
+    $footer_settings_stmt->bind_param("i", $footer_user_id);
+    $footer_settings_stmt->execute();
+    $footer_settings_result = $footer_settings_stmt->get_result();
+    $footer_user_settings = $footer_settings_result->fetch_assoc();
+    $footer_settings_stmt->close();
+
+    if ($footer_user_settings && isset($footer_user_settings['theme'])) {
+        $footer_theme = $footer_user_settings['theme'];
+    }
+}
 ?>
 
 <!-- Admin Footer Component -->
@@ -47,9 +63,12 @@
             return;
         }
         
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'system';
+        // Load theme from database
+        const dbTheme = '<?php echo htmlspecialchars($footer_theme); ?>';
+        const savedTheme = dbTheme === 'auto' ? 'system' : dbTheme;
+
         htmlElement.setAttribute('data-theme', savedTheme);
+        localStorage.setItem('theme', savedTheme);
         updateThemeButtons(savedTheme);
         
         themeToggleBtns.forEach(btn => {
@@ -58,12 +77,22 @@
                 htmlElement.setAttribute('data-theme', theme);
                 localStorage.setItem('theme', theme);
                 updateThemeButtons(theme);
-                
+
                 // Apply system theme if selected
                 if (theme === 'system') {
                     applySystemTheme();
                 }
-                
+
+                // Save theme to database
+                const formData = new FormData();
+                formData.append('type', 'theme');
+                formData.append('theme', theme === 'system' ? 'auto' : theme);
+
+                fetch('../../api/action/update-user-settings.php', {
+                    method: 'POST',
+                    body: formData
+                }).catch(error => console.error('Failed to save theme:', error));
+
                 // Dispatch custom event for other components
                 document.dispatchEvent(new CustomEvent('themeChanged', { detail: theme }));
             });

@@ -47,18 +47,29 @@ if (!empty($profile_picture_data)) {
     $profile_picture = 'https://ui-avatars.com/api/?name=' . urlencode($user_data['full_name']) . '&background=4c8a89&color=fff&size=256';
 }
 
-// Static default settings (no database table needed)
-$user_settings = [
-    'email_notifications' => 1,
-    'push_notifications' => 1,
-    'crime_alerts' => 1,
-    'weekly_reports' => 1,
-    'system_updates' => 1,
-    'two_factor_auth' => 0,
-    'theme' => 'light',
-    'language' => 'en',
-    'timezone' => 'UTC'
-];
+// Fetch user settings from database
+$settings_stmt = $mysqli->prepare("SELECT email_notifications, push_notifications, crime_alerts, weekly_reports, system_updates, two_factor_auth, theme, language, timezone FROM crime_department_user_settings WHERE admin_user_id = ? LIMIT 1");
+$settings_stmt->bind_param("i", $user_id);
+$settings_stmt->execute();
+$settings_result = $settings_stmt->get_result();
+$user_settings = $settings_result->fetch_assoc();
+$settings_stmt->close();
+
+// If no settings exist, create default settings
+if (!$user_settings) {
+    $default_stmt = $mysqli->prepare("INSERT INTO crime_department_user_settings (admin_user_id, email_notifications, push_notifications, crime_alerts, weekly_reports, system_updates, two_factor_auth, theme, language, timezone) VALUES (?, 1, 1, 1, 1, 1, 0, 'light', 'en', 'UTC')");
+    $default_stmt->bind_param("i", $user_id);
+    $default_stmt->execute();
+    $default_stmt->close();
+
+    // Fetch the newly created settings
+    $settings_stmt = $mysqli->prepare("SELECT email_notifications, push_notifications, crime_alerts, weekly_reports, system_updates, two_factor_auth, theme, language, timezone FROM crime_department_user_settings WHERE admin_user_id = ? LIMIT 1");
+    $settings_stmt->bind_param("i", $user_id);
+    $settings_stmt->execute();
+    $settings_result = $settings_stmt->get_result();
+    $user_settings = $settings_result->fetch_assoc();
+    $settings_stmt->close();
+}
 
 // Check if production environment
 $is_production = ($_ENV['APP_ENV'] ?? 'local') === 'production';
@@ -80,6 +91,19 @@ $php_ext = $is_production ? '' : '.php';
     <link rel="icon" type="image/x-icon" href="../image/favicon.ico">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Initialize theme from database before page renders -->
+    <script>
+        (function() {
+            const dbTheme = '<?php echo htmlspecialchars($user_settings['theme'] ?? 'light'); ?>';
+            const footerTheme = dbTheme === 'auto' ? 'system' : dbTheme;
+
+            // Set HTML attribute for immediate theme application
+            document.documentElement.setAttribute('data-theme', footerTheme);
+
+            // Sync with localStorage
+            localStorage.setItem('theme', footerTheme);
+        })();
+    </script>
 </head>
 <body>
     <?php include '../includes/sidebar.php' ?>
@@ -349,6 +373,7 @@ $php_ext = $is_production ? '' : '.php';
                                 <p class="section-description">Add an extra layer of security to your account</p>
                             </div>
 
+                            <?php if ($user_data['registration_type'] === 'email'): ?>
                             <div class="setting-item">
                                 <div class="setting-info">
                                     <div class="setting-label">
@@ -374,6 +399,15 @@ $php_ext = $is_production ? '' : '.php';
                                     <p>Two-factor authentication feature is currently under development.</p>
                                 </div>
                             </div>
+                            <?php else: ?>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <div>
+                                    <strong>Google Account - 2FA Not Available</strong>
+                                    <p>Two-factor authentication is only available for email-registered accounts. Google accounts use Google's own security features.</p>
+                                </div>
+                            </div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Active Sessions -->
@@ -656,6 +690,17 @@ $php_ext = $is_production ? '' : '.php';
             });
         });
 
+        // Initialize theme dropdown from database on page load
+        (function initializeTheme() {
+            const themeSelect = document.getElementById('themeSelect');
+            const dbTheme = '<?php echo htmlspecialchars($user_settings['theme'] ?? 'light'); ?>';
+
+            if (themeSelect) {
+                // Database already has 'auto', 'light', or 'dark'
+                themeSelect.value = dbTheme;
+            }
+        })();
+
         // Password visibility toggle
         document.querySelectorAll('.toggle-password').forEach(button => {
             button.addEventListener('click', function() {
@@ -769,11 +814,53 @@ $php_ext = $is_production ? '' : '.php';
         document.getElementById('notificationsForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            Swal.fire({
-                icon: 'info',
-                title: 'Feature Not Available',
-                text: 'Notification preferences are currently view-only. This feature will be available in a future update.',
-                confirmButtonColor: '#4c8a89'
+            const btn = this.querySelector('button[type="submit"]');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoader = btn.querySelector('.btn-loader');
+
+            // Show loader
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'flex';
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+            formData.append('type', 'notifications');
+
+            fetch('../../api/action/update-user-settings.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#4c8a89'
+                });
+            })
+            .finally(() => {
+                // Hide loader
+                btnText.style.display = 'flex';
+                btnLoader.style.display = 'none';
+                btn.disabled = false;
             });
         });
 
@@ -781,18 +868,32 @@ $php_ext = $is_production ? '' : '.php';
         document.getElementById('themeSelect').addEventListener('change', function(e) {
             const theme = this.value;
 
+            // Map 'auto' to 'system' for footer compatibility
+            const footerTheme = theme === 'auto' ? 'system' : theme;
+
+            // Apply theme
             if (theme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             } else if (theme === 'light') {
-                document.documentElement.removeAttribute('data-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
             } else if (theme === 'auto') {
                 // Auto detect system preference
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                } else {
-                    document.documentElement.removeAttribute('data-theme');
-                }
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
             }
+
+            // Sync with footer toggle
+            localStorage.setItem('theme', footerTheme);
+
+            // Update footer buttons
+            const footerButtons = document.querySelectorAll('.theme-toggle .theme-toggle-btn');
+            footerButtons.forEach(btn => {
+                if (btn.getAttribute('data-theme') === footerTheme) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
 
             // Show preview notification
             const Toast = Swal.mixin({
@@ -809,17 +910,119 @@ $php_ext = $is_production ? '' : '.php';
             });
         });
 
+        // Listen for theme changes from footer
+        document.addEventListener('themeChanged', function(e) {
+            const footerTheme = e.detail;
+            const themeSelect = document.getElementById('themeSelect');
+
+            if (themeSelect) {
+                // Map 'system' to 'auto' for settings dropdown
+                const settingsTheme = footerTheme === 'system' ? 'auto' : footerTheme;
+                themeSelect.value = settingsTheme;
+            }
+        });
+
         // Preferences form submission
         document.getElementById('preferencesForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            Swal.fire({
-                icon: 'info',
-                title: 'Feature Not Available',
-                text: 'Preference settings are currently view-only. This feature will be available in a future update.',
-                confirmButtonColor: '#4c8a89'
+            const btn = this.querySelector('button[type="submit"]');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoader = btn.querySelector('.btn-loader');
+
+            // Show loader
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'flex';
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+            formData.append('type', 'preferences');
+
+            fetch('../../api/action/update-user-settings.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#4c8a89'
+                });
+            })
+            .finally(() => {
+                // Hide loader
+                btnText.style.display = 'flex';
+                btnLoader.style.display = 'none';
+                btn.disabled = false;
             });
         });
+
+        // 2FA Toggle
+        <?php if ($user_data['registration_type'] === 'email'): ?>
+        document.getElementById('two_factor_auth').addEventListener('change', function(e) {
+            const isEnabled = this.checked;
+
+            const formData = new FormData();
+            formData.append('type', '2fa');
+            if (isEnabled) {
+                formData.append('two_factor_auth', '1');
+            }
+
+            fetch('../../api/action/update-user-settings.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                } else {
+                    // Revert toggle if failed
+                    this.checked = !isEnabled;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message,
+                        confirmButtonColor: '#4c8a89'
+                    });
+                }
+            })
+            .catch(error => {
+                // Revert toggle if error
+                this.checked = !isEnabled;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#4c8a89'
+                });
+            });
+        });
+        <?php endif; ?>
 
         // Profile picture upload
         document.getElementById('uploadPictureBtn').addEventListener('click', function() {
