@@ -114,21 +114,21 @@ if ($header_user_id) {
     </div>
     
     <div class="dropdown-body">
-        <a href="<?php echo url('../admin-page/profile'); ?>" class="dropdown-item">
+        <a href="../admin-page/profile.php" class="dropdown-item">
             <i class="fas fa-user"></i>
             <span>Profile</span>
             <?php if ($header_has_incomplete_profile): ?>
                 <span class="dropdown-notification-dot" title="Profile incomplete"></span>
             <?php endif; ?>
         </a>
-        <a href="<?php echo url('settings'); ?>" class="dropdown-item">
+        <a href="settings.php" class="dropdown-item">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
         </a>
     </div>
 
     <div class="dropdown-footer">
-        <a href="<?php echo url('../../api/action/logout'); ?>" class="dropdown-item logout-item">
+        <a href="../../api/action/logout.php" class="dropdown-item logout-item">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>

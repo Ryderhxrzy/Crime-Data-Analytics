@@ -71,9 +71,6 @@ function isSessionHijacked() {
  * Destroy session and redirect to login
  */
 function destroySessionAndRedirect($message = 'Please login to continue') {
-    // Load URL helper
-    require_once __DIR__ . '/../config.php';
-
     // Store message before destroying session
     $redirect_message = $message;
 
@@ -86,7 +83,8 @@ function destroySessionAndRedirect($message = 'Please login to continue') {
     $_SESSION['flash_error'] = $redirect_message;
 
     // Redirect to login page (relative path from frontend/admin-page/)
-    redirect('../../index');
+    header('Location: ../../index.php');
+    exit;
 }
 
 /**

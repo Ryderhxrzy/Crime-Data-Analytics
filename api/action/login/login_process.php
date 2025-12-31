@@ -2,27 +2,25 @@
 require_once '../../config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    redirect('../../../index');
+    header('Location: ../../../index.php');
+    exit;
 }
 
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
 if (empty($email) || empty($password)) {
-    $redirect_url = url('../../../index') . '?error=' . urlencode('Email and password are required');
-    header('Location: ' . $redirect_url);
+    header('Location: ../../../index.php?error=Email and password are required');
     exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $redirect_url = url('../../../index') . '?error=' . urlencode('Invalid email format');
-    header('Location: ' . $redirect_url);
+    header('Location: ../../../index.php?error=Invalid email format');
     exit;
 }
 
 if ($mysqli->connect_error) {
-    $redirect_url = url('../../../index') . '?error=' . urlencode('Database connection failed');
-    header('Location: ' . $redirect_url);
+    header('Location: ../../../index.php?error=Database connection failed');
     exit;
 }
 
@@ -38,8 +36,7 @@ try {
     $result = $stmt->get_result();
 
     if ($result->num_rows === 0) {
-        $redirect_url = url('../../../index') . '?error=' . urlencode('Account not found. Please contact administrator.');
-        header('Location: ' . $redirect_url);
+        header('Location: ../../../index.php?error=Account not found. Please contact administrator.');
         exit;
     }
 
@@ -47,22 +44,19 @@ try {
 
     // Check if account is verified
     if ($user['account_status'] === 'unverified') {
-        $redirect_url = url('../../../index') . '?error=' . urlencode('Your account is not verified. Please contact the super admin to verify your account.');
-        header('Location: ' . $redirect_url);
+        header('Location: ../../../index.php?error=Your account is not verified. Please contact the super admin to verify your account.');
         exit;
     }
 
     // Check registration type - only allow email login for email-registered accounts
     if ($user['registration_type'] === 'google') {
-        $redirect_url = url('../../../index') . '?error=' . urlencode('This account is registered with Google. Please use Google Sign-In.');
-        header('Location: ' . $redirect_url);
+        header('Location: ../../../index.php?error=This account is registered with Google. Please use Google Sign-In.');
         exit;
     }
 
     // Check password (should not be null for email-registered accounts)
     if ($user['password'] === null) {
-        $redirect_url = url('../../../index') . '?error=' . urlencode('Please use Google Sign-In for this account.');
-        header('Location: ' . $redirect_url);
+        header('Location: ../../../index.php?error=Please use Google Sign-In for this account.');
         exit;
     }
 
@@ -92,8 +86,7 @@ try {
             error_log("Failed login log exception: " . $e->getMessage());
         }
 
-        $redirect_url = url('../../../index') . '?error=' . urlencode('Invalid email or password');
-        header('Location: ' . $redirect_url);
+        header('Location: ../../../index.php?error=Invalid email or password');
         exit;
     }
 
@@ -147,12 +140,12 @@ try {
     );
 
     // Redirect to system overview page
-    redirect('../../../frontend/admin-page/system-overview');
+    header('Location: ../../../frontend/admin-page/system-overview.php');
+    exit;
 
 } catch (Exception $e) {
     error_log("Login error: " . $e->getMessage());
-    $redirect_url = url('../../../index') . '?error=' . urlencode('Login failed. Please try again.');
-    header('Location: ' . $redirect_url);
+    header('Location: ../../../index.php?error=Login failed. Please try again.');
     exit;
 }
 

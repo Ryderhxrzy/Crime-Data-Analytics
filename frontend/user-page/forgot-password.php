@@ -2,9 +2,6 @@
 // Start session
 session_start();
 
-// Load URL helper
-require_once __DIR__ . '/../../api/config.php';
-
 // Get flash messages from session
 $flash_error = $_SESSION['flash_error'] ?? null;
 $flash_success = $_SESSION['flash_success'] ?? null;
@@ -528,7 +525,7 @@ unset($_SESSION['flash_success']);
                         allowEscapeKey: false
                     }).then(() => {
                         // Redirect to login page
-                        window.location.href = '../../index<?php echo getPhpExt(); ?>';
+                        window.location.href = '../../index.php';
                     });
                 } else {
                     // Error styling

@@ -54,13 +54,13 @@ if ($sidebar_user_id) {
                 <h3 class="sidebar-section-title">Admin Dashboard</h3>
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="<?php echo url('system-overview'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'system-overview.php' ? 'active' : ''; ?>">
+                        <a href="system-overview.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'system-overview.php' ? 'active' : ''; ?>">
                             <i class="fas fa-home"></i>
                             <span>System Overview</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="<?php echo url('analytics-summary'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics-summary.php' ? 'active' : ''; ?>">
+                        <a href="analytics-summary.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'analytics-summary.php' ? 'active' : ''; ?>">
                             <i class="fas fa-chart-line"></i>
                             <span>Analytics Summary</span>
                         </a>
@@ -81,13 +81,13 @@ if ($sidebar_user_id) {
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="<?php echo url('crime-mapping'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-mapping.php' ? 'active' : ''; ?>">
+                                <a href="crime-mapping.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-mapping.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-map"></i>
                                     <span>Crime Mapping</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('heatmaps'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'heatmaps.php' ? 'active' : ''; ?>">
+                                <a href="heatmaps.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'heatmaps.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-fire"></i>
                                     <span>Heatmaps</span>
                                 </a>
@@ -109,19 +109,19 @@ if ($sidebar_user_id) {
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="<?php echo url('timebased-trend'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'timebased-trend.php' ? 'active' : ''; ?>">
+                                <a href="timebased-trend.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'timebased-trend.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-clock"></i>
                                     <span>Time-Based Trends</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('location-trend'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'location-trend.php' ? 'active' : ''; ?>">
+                                <a href="location-trend.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'location-trend.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-map-pin"></i>
                                     <span>Location Trends</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('crime-type-trend'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-type-trend.php' ? 'active' : ''; ?>">
+                                <a href="crime-type-trend.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-type-trend.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-chart-bar"></i>
                                     <span>Crime Type Trends</span>
                                 </a>
@@ -143,19 +143,19 @@ if ($sidebar_user_id) {
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="<?php echo url('hotspot-prediction'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'hotspot-prediction.php' ? 'active' : ''; ?>">
+                                <a href="hotspot-prediction.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'hotspot-prediction.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-crosshairs"></i>
                                     <span>Crime Hotspots</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('risk-forecasting'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'risk-forecasting.php' ? 'active' : ''; ?>">
+                                <a href="risk-forecasting.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'risk-forecasting.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-exclamation-triangle"></i>
                                     <span>Risk Forecasting</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('pattern-detection'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'pattern-detection.php' ? 'active' : ''; ?>">
+                                <a href="pattern-detection.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'pattern-detection.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-project-diagram"></i>
                                     <span>Pattern Detection</span>
                                 </a>
@@ -176,19 +176,19 @@ if ($sidebar_user_id) {
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="<?php echo url('crime-rate-metrics'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-rate-metrics.php' ? 'active' : ''; ?>">
+                                <a href="crime-rate-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-rate-metrics.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-percentage"></i>
                                     <span>Crime Rates</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('clearance-metrics'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'clearance-metrics.php' ? 'active' : ''; ?>">
+                                <a href="clearance-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'clearance-metrics.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-check-circle"></i>
                                     <span>Clearance Rates</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('response-metrics'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'response-metrics.php' ? 'active' : ''; ?>">
+                                <a href="response-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'response-metrics.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-stopwatch"></i>
                                     <span>Response Times</span>
                                 </a>
@@ -211,19 +211,19 @@ if ($sidebar_user_id) {
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="<?php echo url('report-builder'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'report-builder.php' ? 'active' : ''; ?>">
+                                <a href="report-builder.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'report-builder.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-tools"></i>
                                     <span>Report Builder</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('report-history'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'report-history.php' ? 'active' : ''; ?>">
+                                <a href="report-history.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'report-history.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-history"></i>
                                     <span>Report History</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('scheduled-reports'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'scheduled-reports.php' ? 'active' : ''; ?>">
+                                <a href="scheduled-reports.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'scheduled-reports.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-calendar-alt"></i>
                                     <span>Scheduled Reports</span>
                                 </a>
@@ -240,19 +240,19 @@ if ($sidebar_user_id) {
                         </a>
                         <ul class="sidebar-submenu">
                             <li>
-                                <a href="<?php echo url('crime-alerts'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-alerts.php' ? 'active' : ''; ?>">
+                                <a href="crime-alerts.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-alerts.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-bullhorn"></i>
                                     <span>Crime Cluster Alerts</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('risk-notifications'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'risk-notifications.php' ? 'active' : ''; ?>">
+                                <a href="risk-notifications.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'risk-notifications.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-shield-alt"></i>
                                     <span>High-Risk Notifications</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="<?php echo url('alert-settings'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'alert-settings.php' ? 'active' : ''; ?>">
+                                <a href="alert-settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'alert-settings.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-cog"></i>
                                     <span>Alert Settings</span>
                                 </a>
@@ -267,7 +267,7 @@ if ($sidebar_user_id) {
                 <h3 class="sidebar-section-title">Account</h3>
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="<?php echo url('profile'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
+                        <a href="profile.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'profile.php' ? 'active' : ''; ?>">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
                             <?php if ($sidebar_has_incomplete_profile): ?>
@@ -276,13 +276,13 @@ if ($sidebar_user_id) {
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="<?php echo url('settings'); ?>" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
+                        <a href="settings.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'settings.php' ? 'active' : ''; ?>">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="<?php echo url('../../api/action/logout'); ?>" class="sidebar-link">
+                        <a href="../../api/action/logout.php" class="sidebar-link">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Logout</span>
                         </a>
