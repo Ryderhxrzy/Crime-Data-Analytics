@@ -101,7 +101,7 @@ unset($_SESSION['flash_success']);
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">Remember me</span>
                         </label>
-                        <a href="#" class="forgot-password" id="forgotPasswordLink">
+                        <a href="frontend/user-page/forgot-password.php" class="forgot-password">
                             Forgot password?
                         </a>
                     </div>
@@ -145,16 +145,6 @@ unset($_SESSION['flash_success']);
                 </form>
             </div>
 
-        </div>
-    </div>
-
-    <!-- Reusable Loading Component -->
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
-        <div class="loading-spinner">
-            <div class="spinner-circle"></div>
-            <div class="spinner-circle"></div>
-            <div class="spinner-circle"></div>
-            <p class="loading-text">Processing...</p>
         </div>
     </div>
 
