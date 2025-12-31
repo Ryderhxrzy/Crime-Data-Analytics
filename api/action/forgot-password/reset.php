@@ -25,25 +25,25 @@ if (empty($token)) {
 
 if (empty($new_password) || empty($confirm_password)) {
     $_SESSION['flash_error'] = 'All fields are required';
-    header('Location: ../../../reset-password.php?token=' . urlencode($token));
+    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
     exit;
 }
 
 if (strlen($new_password) < 8) {
     $_SESSION['flash_error'] = 'Password must be at least 8 characters long';
-    header('Location: ../../../reset-password.php?token=' . urlencode($token));
+    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
     exit;
 }
 
 if ($new_password !== $confirm_password) {
     $_SESSION['flash_error'] = 'Passwords do not match';
-    header('Location: ../../../reset-password.php?token=' . urlencode($token));
+    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
     exit;
 }
 
 if ($mysqli->connect_error) {
     $_SESSION['flash_error'] = 'Database connection failed';
-    header('Location: ../../../reset-password.php?token=' . urlencode($token));
+    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
     exit;
 }
 
@@ -73,7 +73,7 @@ try {
     // Check if token has expired
     if (strtotime($reset_data['expires_at']) < time()) {
         $_SESSION['flash_error'] = 'This reset link has expired. Please request a new one.';
-        header('Location: ../../../forgot-password.php');
+        header('Location: ../../../frontend/user-page/forgot-password.php');
         exit;
     }
 
@@ -115,7 +115,7 @@ try {
 } catch (Exception $e) {
     error_log("Password reset error: " . $e->getMessage());
     $_SESSION['flash_error'] = 'An error occurred. Please try again.';
-    header('Location: ../../../reset-password.php?token=' . urlencode($token));
+    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
     exit;
 }
 
