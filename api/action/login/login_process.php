@@ -26,7 +26,7 @@ if ($mysqli->connect_error) {
 }
 
 try {
-    $stmt = $mysqli->prepare("SELECT id, email, password, full_name, role, status, account_status, registration_type FROM crime_department_admin_users WHERE email = ? LIMIT 1");
+    $stmt = $mysqli->prepare("SELECT id, email, password, full_name, role, status, account_status, registration_type, attempt_count FROM crime_department_admin_users WHERE email = ? LIMIT 1");
 
     if (!$stmt) {
         throw new Exception("Database preparation failed: " . $mysqli->error);
@@ -42,6 +42,12 @@ try {
     }
 
     $user = $result->fetch_assoc();
+
+    // Check if account is locked
+    if ($user['status'] === 'lock') {
+        header('Location: ../../../index.php?error=Your account has been locked due to multiple failed login attempts. Please check your email for unlock instructions.');
+        exit;
+    }
 
     // Check if account is verified
     if ($user['account_status'] === 'unverified') {
@@ -66,42 +72,97 @@ try {
         $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-        // Log failed login attempt without user_id (since credentials are wrong)
-        $description = "Failed login attempt - incorrect password for email: " . $email;
+        // Increment attempt count
+        $current_attempts = intval($user['attempt_count']) + 1;
+        $new_status = $user['status'];
 
-        // Try direct insert without prepared statement to test
-        try {
-            $escaped_description = $mysqli->real_escape_string($description);
-            $escaped_ip = $ip_address ? "'" . $mysqli->real_escape_string($ip_address) . "'" : "NULL";
-            $escaped_agent = $user_agent ? "'" . $mysqli->real_escape_string($user_agent) . "'" : "NULL";
-
-            $sql = "INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent)
-                    VALUES (NULL, 'failed_login', '$escaped_description', $escaped_ip, $escaped_agent)";
-
-            if (!$mysqli->query($sql)) {
-                error_log("Failed login log error: " . $mysqli->error);
-            } else {
-                error_log("Failed login logged successfully. Insert ID: " . $mysqli->insert_id);
-            }
-        } catch (Exception $e) {
-            error_log("Failed login log exception: " . $e->getMessage());
+        // Lock account if attempts reach 3
+        if ($current_attempts >= 3) {
+            $new_status = 'lock';
         }
 
-        header('Location: ../../../index.php?error=Invalid email or password');
+        // Update attempt count and status, and log IP address
+        $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET attempt_count = ?, status = ?, ip_address = ? WHERE id = ?");
+        $update_stmt->bind_param("issi", $current_attempts, $new_status, $ip_address, $user['id']);
+        $update_stmt->execute();
+        $update_stmt->close();
+
+        // Log failed login attempt
+        $description = "Failed login attempt - incorrect password (Attempt #" . $current_attempts . ")";
+
+        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'failed_login', ?, ?, ?)");
+        $log_stmt->bind_param("isss", $user['id'], $description, $ip_address, $user_agent);
+        $log_stmt->execute();
+        $log_stmt->close();
+
+        // If account is now locked, send unlock email
+        if ($new_status === 'lock') {
+            // Send unlock email
+            require_once __DIR__ . '/../../utils/mailer.php';
+
+            $unlock_token = bin2hex(random_bytes(32));
+            $unlock_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . "/Crime-Data-Analytics/api/action/unlock-account.php?token=" . $unlock_token;
+
+            // Store unlock token in database
+            $token_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET unlock_token = ?, unlock_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?");
+            $token_stmt->bind_param("si", $unlock_token, $user['id']);
+            $token_stmt->execute();
+            $token_stmt->close();
+
+            // Prepare email content
+            $subject = "Account Locked - Unlock Required";
+            $emailBody = "
+                <h2 style='margin: 0 0 20px 0; color: #333333; font-size: 20px;'>Account Locked</h2>
+                <p style='margin: 0 0 20px 0;'>Your account has been locked due to 3 failed login attempts.</p>
+                <p style='margin: 0 0 20px 0;'>For security reasons, please unlock your account by clicking the button below:</p>
+                <table width='100%' cellpadding='0' cellspacing='0'>
+                    <tr>
+                        <td align='center' style='padding: 20px 0;'>
+                            <a href='" . $unlock_link . "' style='background-color: #4c8a89; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px; font-weight: bold; display: inline-block;'>Unlock Account</a>
+                        </td>
+                    </tr>
+                </table>
+                <p style='margin: 20px 0; color: #666666; font-size: 14px;'>
+                    Or copy and paste this link into your browser:
+                </p>
+                <p style='margin: 0 0 20px 0; color: #4c8a89; font-size: 12px; word-break: break-all;'>
+                    " . $unlock_link . "
+                </p>
+                <p style='margin: 20px 0; font-size: 14px;'><strong>Important:</strong> This link will expire in <strong>1 hour</strong>.</p>
+                <p style='margin: 20px 0 0 0; font-size: 14px;'>If you did not attempt to login, please contact the administrator immediately.</p>
+                <div style='margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-left: 4px solid #4c8a89; border-radius: 4px;'>
+                    <p style='margin: 0; font-size: 14px;'><strong>IP Address:</strong> " . htmlspecialchars($ip_address) . "</p>
+                    <p style='margin: 10px 0 0 0; font-size: 14px;'><strong>Time:</strong> " . date('Y-m-d H:i:s') . "</p>
+                </div>
+            ";
+
+            // Send email
+            try {
+                $mailer = new Mailer();
+                $mailer->sendGenericEmail($user['email'], $user['full_name'], $subject, $emailBody);
+            } catch (Exception $e) {
+                error_log("Failed to send unlock email: " . $e->getMessage());
+            }
+
+            header('Location: ../../../index.php?error=Account locked due to multiple failed login attempts. Please check your email for unlock instructions.');
+        } else {
+            $remaining_attempts = 3 - $current_attempts;
+            header('Location: ../../../index.php?error=Invalid email or password. ' . $remaining_attempts . ' attempt(s) remaining before account lock.');
+        }
         exit;
     }
 
     $stmt->close();
 
-    // Update user status to 'active' and last_login timestamp
-    $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'active', last_login = NOW() WHERE id = ?");
-    $update_stmt->bind_param("i", $user['id']);
-    $update_stmt->execute();
-    $update_stmt->close();
-
     // Get user IP address and user agent
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+    // Update user status to 'active', reset attempt count, update IP address and last_login timestamp
+    $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'active', attempt_count = 0, ip_address = ?, last_login = NOW() WHERE id = ?");
+    $update_stmt->bind_param("si", $ip_address, $user['id']);
+    $update_stmt->execute();
+    $update_stmt->close();
 
     // Insert activity log for login
     $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, 'login', 'User logged in via email/password', ?, ?)");
