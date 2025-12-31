@@ -402,10 +402,6 @@ unset($_SESSION['flash_success']);
             sendOtpButton.disabled = true;
 
             try {
-                console.log('=== SEND OTP DEBUG START ===');
-                console.log('Email:', email);
-                console.log('Sending request to: ../../api/action/forgot-password/send-otp.php');
-
                 // Send OTP request
                 const response = await fetch('../../api/action/forgot-password/send-otp.php', {
                     method: 'POST',
@@ -415,41 +411,9 @@ unset($_SESSION['flash_success']);
                     body: 'email=' + encodeURIComponent(email)
                 });
 
-                console.log('Response status:', response.status);
-                console.log('Response ok:', response.ok);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
-                // Get response text first to check for errors
-                const responseText = await response.text();
-                console.log('Response text length:', responseText.length);
-                console.log('Response text (first 500 chars):', responseText.substring(0, 500));
-                console.log('Response text (full):', responseText);
-
-                // Try to parse as JSON
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                    console.log('Parsed JSON successfully:', data);
-                } catch (parseError) {
-                    console.error('❌ JSON Parse Error:', parseError);
-                    console.error('❌ Response Text:', responseText);
-                    console.error('❌ Response is not valid JSON!');
-                    throw new Error('Invalid server response. Please check server logs.');
-                }
-
-                console.log('Data.success:', data.success);
-                console.log('Data.message:', data.message);
-
-                // Log debug info if available
-                if (data.debug_error) {
-                    console.error('🐛 DEBUG ERROR:', data.debug_error);
-                    console.error('🐛 DEBUG FILE:', data.debug_file);
-                    console.error('🐛 DEBUG LINE:', data.debug_line);
-                }
+                const data = await response.json();
 
                 if (data.success) {
-                    console.log('✅ OTP sent successfully!');
-
                     // Show OTP form
                     document.getElementById('emailForm').style.display = 'none';
                     document.getElementById('otpForm').style.display = 'block';
@@ -471,7 +435,6 @@ unset($_SESSION['flash_success']);
                         timer: 3000
                     });
                 } else {
-                    console.log('❌ Server returned error:', data.message);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
@@ -480,28 +443,19 @@ unset($_SESSION['flash_success']);
                         confirmButtonText: 'OK'
                     });
                 }
-                console.log('=== SEND OTP DEBUG END ===');
             } catch (error) {
-                console.error('=== SEND OTP CATCH BLOCK ===');
-                console.error('❌ Exception caught:', error);
-                console.error('❌ Error message:', error.message);
-                console.error('❌ Error stack:', error.stack);
-                console.error('=== SEND OTP CATCH BLOCK END ===');
-
                 Swal.fire({
                     icon: 'error',
                     title: 'Error!',
-                    text: error.message || 'An error occurred. Please try again.',
+                    text: 'An error occurred. Please try again.',
                     confirmButtonColor: '#4c8a89',
                     confirmButtonText: 'OK'
                 });
             } finally {
-                console.log('=== SEND OTP FINALLY BLOCK ===');
                 // Reset button state
                 btnText.style.display = 'inline';
                 btnLoader.style.display = 'none';
                 sendOtpButton.disabled = false;
-                console.log('Button state reset');
             }
         });
 
