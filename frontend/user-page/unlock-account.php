@@ -181,19 +181,15 @@ $mysqli->close();
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Show success notification
+        // Show success notification (no auto-redirect)
         Swal.fire({
             icon: 'success',
             title: 'Account Unlocked!',
-            text: 'Your account has been successfully unlocked. You can now login.',
+            text: 'Your account has been successfully unlocked. Click the button below to login.',
             confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'Continue to Login',
-            timer: 5000,
-            timerProgressBar: true
-        }).then((result) => {
-            if (result.isConfirmed || result.isDismissed) {
-                window.location.href = '<?php echo htmlspecialchars($login_url); ?>';
-            }
+            confirmButtonText: 'OK',
+            allowOutsideClick: true,
+            allowEscapeKey: true
         });
     </script>
 </body>
