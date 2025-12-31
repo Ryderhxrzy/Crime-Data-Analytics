@@ -440,6 +440,13 @@ unset($_SESSION['flash_success']);
                 console.log('Data.success:', data.success);
                 console.log('Data.message:', data.message);
 
+                // Log debug info if available
+                if (data.debug_error) {
+                    console.error('🐛 DEBUG ERROR:', data.debug_error);
+                    console.error('🐛 DEBUG FILE:', data.debug_file);
+                    console.error('🐛 DEBUG LINE:', data.debug_line);
+                }
+
                 if (data.success) {
                     console.log('✅ OTP sent successfully!');
 

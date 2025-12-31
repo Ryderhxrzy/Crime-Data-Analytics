@@ -133,7 +133,16 @@ try {
     error_log("Send OTP error: " . $e->getMessage());
     error_log("Exception trace: " . $e->getTraceAsString());
     ob_clean();
-    $errorResponse = ['success' => false, 'message' => 'An error occurred. Please try again.'];
+
+    // TEMPORARY: Send detailed error to frontend for debugging
+    $errorResponse = [
+        'success' => false,
+        'message' => 'An error occurred. Please try again.',
+        'debug_error' => $e->getMessage(),
+        'debug_file' => $e->getFile(),
+        'debug_line' => $e->getLine()
+    ];
+
     error_log("Error JSON response: " . json_encode($errorResponse));
     echo json_encode($errorResponse);
     ob_end_flush();
