@@ -12,8 +12,7 @@ $token = $_GET['token'] ?? '';
 
 if (empty($token)) {
     $_SESSION['flash_error'] = 'Invalid reset link';
-    header('Location: ../../index.php');
-    exit;
+    redirect('../../index');
 }
 
 // Verify token exists and is valid
@@ -31,8 +30,7 @@ $result = $stmt->get_result();
 if ($result->num_rows === 0) {
     $_SESSION['flash_error'] = 'Invalid or expired reset link';
     $stmt->close();
-    header('Location: ../../index.php');
-    exit;
+    redirect('../../index');
 }
 
 $reset_data = $result->fetch_assoc();
@@ -41,15 +39,13 @@ $stmt->close();
 // Check if token has expired
 if (strtotime($reset_data['expires_at']) < time()) {
     $_SESSION['flash_error'] = 'This reset link has expired. Please request a new one.';
-    header('Location: forgot-password.php');
-    exit;
+    redirect('forgot-password');
 }
 
 // Check if account is registered with email
 if ($reset_data['registration_type'] !== 'email') {
     $_SESSION['flash_error'] = 'This account is registered with Google. Please use Google Sign-In.';
-    header('Location: ../../index.php');
-    exit;
+    redirect('../../index');
 }
 
 // Get flash messages
@@ -151,7 +147,7 @@ unset($_SESSION['flash_success']);
 
                     <!-- Back to Login -->
                     <div class="form-options" style="justify-content: center; margin-top: 20px;">
-                        <a href="../../index.php" class="forgot-password" style="text-decoration: none;">
+                        <a href="<?php echo url('../../index'); ?>" class="forgot-password" style="text-decoration: none;">
                             <i class="fas fa-arrow-left" style="margin-right: 5px;"></i>
                             Back to Login
                         </a>

@@ -65,6 +65,7 @@ session_destroy();
 error_log("User logged out: " . $user_email);
 
 // Redirect to login page with success message
-header('Location: ../../index.php?success=You have been logged out successfully');
+$redirect_url = url('../../index') . '?success=' . urlencode('You have been logged out successfully');
+header('Location: ' . $redirect_url);
 exit;
 ?>

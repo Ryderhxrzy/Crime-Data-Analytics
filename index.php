@@ -2,6 +2,9 @@
 // Start session
 session_start();
 
+// Load URL helper
+require_once __DIR__ . '/api/config.php';
+
 // Check if user is already logged in
 if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
     // Check if session is still valid (not expired)
@@ -11,8 +14,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
         $_SESSION['last_activity'] = time();
 
         // Redirect to system overview page
-        header('Location: frontend/admin-page/system-overview.php');
-        exit;
+        redirect('frontend/admin-page/system-overview');
     }
 }
 
@@ -52,7 +54,7 @@ unset($_SESSION['flash_success']);
                 </div>
 
                 <!-- Login Form -->
-                <form id="loginForm" class="login-form" action="api/action/login/login.php" method="POST" novalidate>
+                <form id="loginForm" class="login-form" action="<?php echo url('api/action/login/login'); ?>" method="POST" novalidate>
                     <!-- Email Field -->
                     <div class="form-group">
                         <div class="input-wrapper">
@@ -101,7 +103,7 @@ unset($_SESSION['flash_success']);
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">Remember me</span>
                         </label>
-                        <a href="frontend/user-page/forgot-password.php" class="forgot-password">
+                        <a href="<?php echo url('frontend/user-page/forgot-password'); ?>" class="forgot-password">
                             Forgot password?
                         </a>
                     </div>
@@ -137,9 +139,9 @@ unset($_SESSION['flash_success']);
                     <div class="legal-links">
                         <p>By signing in, you agree to our</p>
                         <div class="links">
-                            <a href="frontend/legal/terms-of-use.php" target="_blank">Terms of Use</a>
+                            <a href="<?php echo url('frontend/legal/terms-of-use'); ?>" target="_blank">Terms of Use</a>
                             <span>and</span>
-                            <a href="frontend/legal/privacy-policy.php" target="_blank">Privacy Policy</a>
+                            <a href="<?php echo url('frontend/legal/privacy-policy'); ?>" target="_blank">Privacy Policy</a>
                         </div>
                     </div>
                 </form>

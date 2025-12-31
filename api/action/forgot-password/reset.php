@@ -8,8 +8,7 @@ session_start();
 require_once '../../config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../../index.php');
-    exit;
+    redirect('../../../index');
 }
 
 $token = trim($_POST['token'] ?? '');
@@ -19,31 +18,34 @@ $confirm_password = $_POST['confirm_password'] ?? '';
 // Validate inputs
 if (empty($token)) {
     $_SESSION['flash_error'] = 'Invalid reset link';
-    header('Location: ../../../index.php');
-    exit;
+    redirect('../../../index');
 }
 
 if (empty($new_password) || empty($confirm_password)) {
     $_SESSION['flash_error'] = 'All fields are required';
-    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
+    $redirect_url = url('../../../frontend/user-page/reset-password') . '?token=' . urlencode($token);
+    header('Location: ' . $redirect_url);
     exit;
 }
 
 if (strlen($new_password) < 8) {
     $_SESSION['flash_error'] = 'Password must be at least 8 characters long';
-    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
+    $redirect_url = url('../../../frontend/user-page/reset-password') . '?token=' . urlencode($token);
+    header('Location: ' . $redirect_url);
     exit;
 }
 
 if ($new_password !== $confirm_password) {
     $_SESSION['flash_error'] = 'Passwords do not match';
-    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
+    $redirect_url = url('../../../frontend/user-page/reset-password') . '?token=' . urlencode($token);
+    header('Location: ' . $redirect_url);
     exit;
 }
 
 if ($mysqli->connect_error) {
     $_SESSION['flash_error'] = 'Database connection failed';
-    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
+    $redirect_url = url('../../../frontend/user-page/reset-password') . '?token=' . urlencode($token);
+    header('Location: ' . $redirect_url);
     exit;
 }
 
@@ -63,8 +65,7 @@ try {
     if ($result->num_rows === 0) {
         $_SESSION['flash_error'] = 'Invalid or already used reset link';
         $stmt->close();
-        header('Location: ../../../index.php');
-        exit;
+        redirect('../../../index');
     }
 
     $reset_data = $result->fetch_assoc();
@@ -73,15 +74,13 @@ try {
     // Check if token has expired
     if (strtotime($reset_data['expires_at']) < time()) {
         $_SESSION['flash_error'] = 'This reset link has expired. Please request a new one.';
-        header('Location: ../../../frontend/user-page/forgot-password.php');
-        exit;
+        redirect('../../../frontend/user-page/forgot-password');
     }
 
     // Check if account is registered with email
     if ($reset_data['registration_type'] !== 'email') {
         $_SESSION['flash_error'] = 'This account is registered with Google. Cannot reset password.';
-        header('Location: ../../../index.php');
-        exit;
+        redirect('../../../index');
     }
 
     // Hash the new password
@@ -109,13 +108,13 @@ try {
     $log_stmt->close();
 
     $_SESSION['flash_success'] = 'Your password has been reset successfully. You can now login with your new password.';
-    header('Location: ../../../index.php');
-    exit;
+    redirect('../../../index');
 
 } catch (Exception $e) {
     error_log("Password reset error: " . $e->getMessage());
     $_SESSION['flash_error'] = 'An error occurred. Please try again.';
-    header('Location: ../../../frontend/user-page/reset-password.php?token=' . urlencode($token));
+    $redirect_url = url('../../../frontend/user-page/reset-password') . '?token=' . urlencode($token);
+    header('Location: ' . $redirect_url);
     exit;
 }
 
