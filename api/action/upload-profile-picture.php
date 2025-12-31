@@ -41,12 +41,23 @@ $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 // Generate unique filename: userid_timestamp.extension
 $new_filename = $user_id . '_' . time() . '.' . $file_ext;
 
-// Define upload directory
+// Define upload directory - use absolute path for production compatibility
 $upload_dir = __DIR__ . '/../../frontend/image/profile/';
 
 // Create directory if it doesn't exist
 if (!file_exists($upload_dir)) {
-    mkdir($upload_dir, 0755, true);
+    if (!mkdir($upload_dir, 0775, true)) {
+        error_log("Failed to create upload directory: " . $upload_dir);
+        echo json_encode(['success' => false, 'message' => 'Failed to create upload directory']);
+        exit;
+    }
+}
+
+// Check if directory is writable
+if (!is_writable($upload_dir)) {
+    error_log("Upload directory is not writable: " . $upload_dir);
+    echo json_encode(['success' => false, 'message' => 'Upload directory is not writable. Please check permissions.']);
+    exit;
 }
 
 $upload_path = $upload_dir . $new_filename;
@@ -61,6 +72,9 @@ $stmt->close();
 
 // Move uploaded file
 if (move_uploaded_file($file_tmp, $upload_path)) {
+    // Set proper permissions on uploaded file
+    chmod($upload_path, 0644);
+
     // Update database with only filename
     $stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET profile_picture = ?, updated_at = NOW() WHERE id = ?");
     $stmt->bind_param("si", $new_filename, $user_id);
@@ -69,8 +83,11 @@ if (move_uploaded_file($file_tmp, $upload_path)) {
         $stmt->close();
 
         // Delete old profile picture if it exists and is not a default avatar
-        if (!empty($old_data['profile_picture']) && file_exists($upload_dir . $old_data['profile_picture'])) {
-            unlink($upload_dir . $old_data['profile_picture']);
+        if (!empty($old_data['profile_picture']) && !preg_match('/^https?:\/\//', $old_data['profile_picture'])) {
+            $old_file_path = $upload_dir . $old_data['profile_picture'];
+            if (file_exists($old_file_path)) {
+                @unlink($old_file_path);
+            }
         }
 
         // Log activity
@@ -91,11 +108,19 @@ if (move_uploaded_file($file_tmp, $upload_path)) {
         ]);
     } else {
         // Failed to update database, delete uploaded file
-        unlink($upload_path);
+        @unlink($upload_path);
+        error_log("Database update failed for user $user_id: " . $stmt->error);
         echo json_encode(['success' => false, 'message' => 'Database update failed']);
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Failed to upload file']);
+    // Log detailed error information
+    $upload_error = error_get_last();
+    error_log("File upload failed for user $user_id. Temp: $file_tmp, Target: $upload_path, Error: " . json_encode($upload_error));
+    error_log("Directory writable: " . (is_writable($upload_dir) ? 'yes' : 'no'));
+    error_log("Directory exists: " . (file_exists($upload_dir) ? 'yes' : 'no'));
+    error_log("Temp file exists: " . (file_exists($file_tmp) ? 'yes' : 'no'));
+
+    echo json_encode(['success' => false, 'message' => 'Failed to upload file. Please check server permissions.']);
 }
 
 $mysqli->close();

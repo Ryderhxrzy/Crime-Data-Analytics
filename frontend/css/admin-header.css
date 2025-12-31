@@ -314,6 +314,11 @@
     text-decoration: none;
     font-size: 0.875rem;
     transition: all 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+
+.dropdown-item:last-child {
+    margin-bottom: 0;
 }
 
 .dropdown-item:hover {
