@@ -9,7 +9,7 @@
 session_start();
 
 // Include required files
-require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/../../helpers/url-helper.php';
 require_once __DIR__ . '/GoogleOAuth.php';
 require_once __DIR__ . '/../../config.php';
 
