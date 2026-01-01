@@ -52,15 +52,9 @@ try {
 
     // Send confirmation email
     require_once '../utils/mailer.php';
+    require_once '../helpers/url-helper.php';
 
-    // Generate login URL based on environment (same as Mailer class)
-    $app_env = $_ENV['APP_ENV'] ?? 'local';
-    if ($app_env === 'production') {
-        $login_url = $_ENV['DEPLOY_LINK'] ?? 'https://crime.alertaraqc.com/';
-    } else {
-        $login_url = 'http://localhost/Crime-Data-Analytics/';
-    }
-
+    $login_url = getBaseUrl();
     $subject = "Account Unlocked Successfully";
     $emailBody = "
         <h2 style='margin: 0 0 20px 0; color: #333333; font-size: 20px;'>Account Unlocked</h2>
