@@ -108,6 +108,7 @@ $mysqli->close();
     <title>Account Unlocked - AlerTaraQC</title>
     <link rel="stylesheet" href="../css/global.css">
     <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/unlock-account.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="icon" type="image/x-icon" href="../image/favicon.ico">
@@ -120,44 +121,44 @@ $mysqli->close();
             <div class="login-card">
                 <!-- Success Icon -->
                 <div class="login-header" style="text-align: center;">
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background-color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-check" style="font-size: 40px; color: white;"></i>
+                    <div class="success-icon">
+                        <i class="fas fa-check"></i>
                     </div>
                     <h1 class="login-title">Account Unlocked!</h1>
                     <p class="login-subtitle">Your account has been successfully unlocked.</p>
                 </div>
 
                 <!-- Account Details -->
-                <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-                    <p style="margin: 0 0 10px 0; color: #4b5563;">
-                        <i class="fas fa-envelope" style="color: #4c8a89; margin-right: 10px;"></i>
+                <div class="account-details">
+                    <p>
+                        <i class="fas fa-envelope"></i>
                         <strong>Email:</strong> <?php echo htmlspecialchars($user_data['email']); ?>
                     </p>
-                    <p style="margin: 0 0 10px 0; color: #4b5563;">
-                        <i class="fas fa-clock" style="color: #4c8a89; margin-right: 10px;"></i>
+                    <p>
+                        <i class="fas fa-clock"></i>
                         <strong>Unlocked at:</strong> <?php echo date('F j, Y, g:i a'); ?>
                     </p>
-                    <p style="margin: 0; color: #4b5563;">
-                        <i class="fas fa-network-wired" style="color: #4c8a89; margin-right: 10px;"></i>
+                    <p>
+                        <i class="fas fa-network-wired"></i>
                         <strong>IP Address:</strong> <?php echo htmlspecialchars($ip_address); ?>
                     </p>
                 </div>
 
                 <!-- Security Notice -->
-                <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                    <p style="margin: 0; color: #92400e; font-size: 14px;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                <div class="security-notice">
+                    <p>
+                        <i class="fas fa-exclamation-triangle"></i>
                         <strong>Security Notice:</strong> If you did not request this unlock, please contact the administrator immediately and change your password.
                     </p>
                 </div>
 
                 <!-- Information -->
-                <div style="margin-bottom: 20px; padding: 15px; background-color: #e0f2f1; border-radius: 8px;">
-                    <p style="margin: 0 0 10px 0; color: #00695c; font-size: 14px;">
-                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                <div class="info-box">
+                    <p>
+                        <i class="fas fa-info-circle"></i>
                         <strong>What happened?</strong>
                     </p>
-                    <p style="margin: 0; color: #00695c; font-size: 14px;">
+                    <p>
                         Your account was locked after 3 failed login attempts for security reasons. You can now login with your correct credentials.
                     </p>
                 </div>
@@ -169,8 +170,8 @@ $mysqli->close();
                 </a>
 
                 <!-- Footer Note -->
-                <div style="margin-top: 20px; text-align: center; color: #6b7280; font-size: 12px;">
-                    <p style="margin: 0;">
+                <div class="unlock-footer">
+                    <p>
                         A confirmation email has been sent to your email address.
                     </p>
                 </div>

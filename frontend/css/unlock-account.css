@@ -1,0 +1,88 @@
+/* Unlock Account Page Styles */
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background-color: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+.account-details {
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.account-details p {
+    margin: 0 0 10px 0;
+    color: #4b5563;
+}
+
+.account-details p:last-child {
+    margin: 0;
+}
+
+.account-details i {
+    color: #4c8a89;
+    margin-right: 10px;
+}
+
+.security-notice {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.security-notice p {
+    margin: 0;
+    color: #92400e;
+    font-size: 14px;
+}
+
+.security-notice i {
+    margin-right: 8px;
+}
+
+.info-box {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e0f2f1;
+    border-radius: 8px;
+}
+
+.info-box p {
+    margin: 0;
+    color: #00695c;
+    font-size: 14px;
+}
+
+.info-box p:first-child {
+    margin-bottom: 10px;
+}
+
+.info-box i {
+    margin-right: 8px;
+}
+
+.unlock-footer {
+    margin-top: 20px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.unlock-footer p {
+    margin: 0;
+}
