@@ -145,12 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <form class="login-form" method="POST" action="" id="otpForm">
-                    <?php if (isset($error)): ?>
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span><?php echo htmlspecialchars($error); ?></span>
-                    </div>
-                    <?php endif; ?>
 
                     <!-- Timer Display -->
                     <div style="text-align: center; margin-bottom: 25px;">
@@ -165,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <!-- OTP Input Boxes -->
                     <div class="form-group" style="margin-bottom: 30px;">
-                        <div class="otp-input-container" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                        <div class="otp-input-container" style="display: flex; justify-content: center; gap: 10px;">
                             <input type="text" class="otp-box" maxlength="1" data-index="0" autocomplete="off" inputmode="numeric" pattern="[0-9]">
                             <input type="text" class="otp-box" maxlength="1" data-index="1" autocomplete="off" inputmode="numeric" pattern="[0-9]">
                             <input type="text" class="otp-box" maxlength="1" data-index="2" autocomplete="off" inputmode="numeric" pattern="[0-9]">
@@ -173,7 +167,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="text" class="otp-box" maxlength="1" data-index="4" autocomplete="off" inputmode="numeric" pattern="[0-9]">
                             <input type="text" class="otp-box" maxlength="1" data-index="5" autocomplete="off" inputmode="numeric" pattern="[0-9]">
                         </div>
-                        <span class="field-error" id="otpError" style="display: block; text-align: center;"></span>
                         <input type="hidden" name="otp" id="otpValue">
                     </div>
 
@@ -198,6 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../../frontend/js/alert-utils.js"></script>
     <style>
         /* OTP Input Boxes Styling */
         .otp-box {
@@ -319,11 +313,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Remove error styling
                 otpBoxes.forEach(b => b.classList.remove('error'));
-                document.getElementById('otpError').textContent = '';
 
                 // Move to next box if current is filled
                 if (this.value.length === 1 && index < 5) {
                     otpBoxes[index + 1].focus();
+                } else if (this.value.length === 1 && index === 5) {
+                    // Auto-submit when all boxes are filled
+                    const otp = getOtpValue();
+                    if (otp.length === 6) {
+                        // Trigger form submission programmatically
+                        submitOtpForm();
+                    }
                 }
             });
 
@@ -345,6 +345,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         });
                         if (numbers.length === 6) {
                             otpBoxes[5].focus();
+                            // Auto-submit after paste
+                            setTimeout(() => submitOtpForm(), 100);
                         }
                     });
                 }
@@ -416,29 +418,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Focus first box
         otpBoxes[0].focus();
 
-        // Form submission
-        otpForm.addEventListener('submit', function(e) {
+        // Submit OTP form function
+        function submitOtpForm() {
             const otp = getOtpValue();
-            const otpError = document.getElementById('otpError');
             const btnText = verifyOtpButton.querySelector('.btn-text');
             const btnLoader = verifyOtpButton.querySelector('.btn-loader');
 
             // Clear previous errors
-            otpError.textContent = '';
             otpBoxes.forEach(box => box.classList.remove('error'));
 
             // Validate OTP
             if (!otp || otp.length === 0) {
-                e.preventDefault();
-                otpError.textContent = 'Please enter the OTP code';
+                AlertUtils.warning('Incomplete OTP', 'Please enter the OTP code');
                 otpBoxes.forEach(box => box.classList.add('error'));
                 otpBoxes[0].focus();
                 return;
             }
 
             if (otp.length !== 6) {
-                e.preventDefault();
-                otpError.textContent = 'Please enter all 6 digits';
+                AlertUtils.warning('Incomplete OTP', 'Please enter all 6 digits');
                 otpBoxes.forEach(box => box.classList.add('error'));
                 return;
             }
@@ -451,22 +449,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             btnLoader.style.display = 'inline-flex';
             verifyOtpButton.disabled = true;
             otpBoxes.forEach(box => box.disabled = true);
+
+            // Submit form natively
+            otpForm.submit();
+        }
+
+        // Form submission
+        otpForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitOtpForm();
         });
 
+        // Show error message if exists
         <?php if (isset($error)): ?>
+        AlertUtils.error('Verification Failed', <?php echo json_encode($error); ?>, function() {
+            // Re-enable form after error
+            const btnText = verifyOtpButton.querySelector('.btn-text');
+            const btnLoader = verifyOtpButton.querySelector('.btn-loader');
+            btnText.style.display = 'inline';
+            btnLoader.style.display = 'none';
+            verifyOtpButton.disabled = false;
+            otpBoxes.forEach(box => box.disabled = false);
+
+            // Clear boxes and refocus
+            clearOtpBoxes();
+        });
+
         // Show error styling on boxes
         otpBoxes.forEach(box => box.classList.add('error'));
-
-        // Re-enable form after error
-        const btnText = verifyOtpButton.querySelector('.btn-text');
-        const btnLoader = verifyOtpButton.querySelector('.btn-loader');
-        btnText.style.display = 'inline';
-        btnLoader.style.display = 'none';
-        verifyOtpButton.disabled = false;
-        otpBoxes.forEach(box => box.disabled = false);
-
-        // Clear boxes after 1 second
-        setTimeout(() => clearOtpBoxes(), 1000);
         <?php endif; ?>
     </script>
 </body>

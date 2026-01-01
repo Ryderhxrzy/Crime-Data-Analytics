@@ -150,6 +150,7 @@ unset($_SESSION['flash_success']);
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="frontend/js/alert-utils.js"></script>
     <script src="frontend/js/login.js"></script>
     <script>
         // Handle URL parameters for success/error messages
@@ -159,51 +160,23 @@ unset($_SESSION['flash_success']);
 
         // Handle flash messages from PHP session
         <?php if ($flash_success): ?>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: <?php echo json_encode($flash_success); ?>,
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK',
-            timer: 3000,
-            timerProgressBar: true
-        });
+        AlertUtils.successWithTimer('Success!', <?php echo json_encode($flash_success); ?>, 3000);
         <?php elseif ($flash_error): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: <?php echo json_encode($flash_error); ?>,
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK'
-        });
+        AlertUtils.error('Error!', <?php echo json_encode($flash_error); ?>);
         <?php endif; ?>
 
         if (success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: success,
-                confirmButtonColor: '#4c8a89',
-                confirmButtonText: 'OK',
-                timer: 3000,
-                timerProgressBar: true
+            AlertUtils.successWithTimer('Success!', success, 3000, function() {
+                // Clear URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
             });
-
-            // Clear URL parameters
-            window.history.replaceState({}, document.title, window.location.pathname);
         }
 
         if (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: error,
-                confirmButtonColor: '#4c8a89',
-                confirmButtonText: 'OK'
+            AlertUtils.error('Error!', error, function() {
+                // Clear URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
             });
-
-            // Clear URL parameters
-            window.history.replaceState({}, document.title, window.location.pathname);
         }
     </script>
 </body>

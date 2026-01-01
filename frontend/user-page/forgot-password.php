@@ -134,6 +134,7 @@ unset($_SESSION['flash_success']);
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/alert-utils.js"></script>
     <style>
         /* OTP Input Boxes Styling */
         .otp-box {
@@ -234,23 +235,9 @@ unset($_SESSION['flash_success']);
     <script>
         // Handle flash messages from PHP session
         <?php if ($flash_success): ?>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: <?php echo json_encode($flash_success); ?>,
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK',
-            timer: 5000,
-            timerProgressBar: true
-        });
+        AlertUtils.successWithTimer('Success!', <?php echo json_encode($flash_success); ?>, 5000);
         <?php elseif ($flash_error): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: <?php echo json_encode($flash_error); ?>,
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK'
-        });
+        AlertUtils.error('Error!', <?php echo json_encode($flash_error); ?>);
         <?php endif; ?>
 
         // Global timer variables
@@ -426,31 +413,12 @@ unset($_SESSION['flash_success']);
                     startOtpTimer(600); // 10 minutes
                     clearOtpBoxes();
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Sent!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK',
-                        timer: 3000
-                    });
+                    AlertUtils.successWithTimer('OTP Sent!', data.message, 3000);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK'
-                    });
+                    AlertUtils.error('Error!', data.message);
                 }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An error occurred. Please try again.',
-                    confirmButtonColor: '#4c8a89',
-                    confirmButtonText: 'OK'
-                });
+                AlertUtils.error('Error!', 'An error occurred. Please try again.');
             } finally {
                 // Reset button state
                 btnText.style.display = 'inline';
@@ -515,15 +483,7 @@ unset($_SESSION['flash_success']);
                         clearInterval(otpTimerInterval);
                     }
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Verified!',
-                        text: 'A password reset link has been sent to your email. Please check your inbox and follow the link to reset your password.',
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'Go to Login',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false
-                    }).then(() => {
+                    AlertUtils.success('OTP Verified!', 'A password reset link has been sent to your email. Please check your inbox and follow the link to reset your password.', function() {
                         // Redirect to login page
                         window.location.href = '../../index.php';
                     });
@@ -532,26 +492,14 @@ unset($_SESSION['flash_success']);
                     otpBoxes.forEach(box => box.classList.add('error'));
                     otpError.textContent = data.message;
 
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK'
-                    });
+                    AlertUtils.error('Error!', data.message);
 
                     // Re-enable boxes and clear
                     otpBoxes.forEach(box => box.disabled = false);
                     setTimeout(() => clearOtpBoxes(), 1000);
                 }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An error occurred. Please try again.',
-                    confirmButtonColor: '#4c8a89',
-                    confirmButtonText: 'OK'
-                });
+                AlertUtils.error('Error!', 'An error occurred. Please try again.');
                 otpBoxes.forEach(box => box.disabled = false);
             } finally {
                 // Reset button state
@@ -591,31 +539,12 @@ unset($_SESSION['flash_success']);
                     document.getElementById('verifyOtpButton').disabled = false;
                     otpBoxes.forEach(box => box.disabled = false);
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Resent!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK',
-                        timer: 3000
-                    });
+                    AlertUtils.successWithTimer('OTP Resent!', data.message, 3000);
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: data.message,
-                        confirmButtonColor: '#4c8a89',
-                        confirmButtonText: 'OK'
-                    });
+                    AlertUtils.error('Error!', data.message);
                 }
             } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An error occurred. Please try again.',
-                    confirmButtonColor: '#4c8a89',
-                    confirmButtonText: 'OK'
-                });
+                AlertUtils.error('Error!', 'An error occurred. Please try again.');
             } finally {
                 button.disabled = false;
                 resendText.textContent = originalText;

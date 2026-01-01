@@ -163,24 +163,13 @@ unset($_SESSION['flash_success']);
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/alert-utils.js"></script>
     <script>
         // Handle flash messages
         <?php if ($flash_success): ?>
-        Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: <?php echo json_encode($flash_success); ?>,
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK'
-        });
+        AlertUtils.success('Success!', <?php echo json_encode($flash_success); ?>);
         <?php elseif ($flash_error): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: <?php echo json_encode($flash_error); ?>,
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK'
-        });
+        AlertUtils.error('Error!', <?php echo json_encode($flash_error); ?>);
         <?php endif; ?>
 
         // Toggle password visibility
