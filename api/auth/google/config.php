@@ -7,12 +7,7 @@
 
 // Load environment variables
 require_once __DIR__ . '/../../config.php';
-
-// Determine base URL based on environment
-$app_env = $_ENV['APP_ENV'] ?? 'local';
-$base_url = ($app_env === 'production')
-    ? rtrim($_ENV['DEPLOY_LINK'] ?? '', '/')
-    : 'http://localhost/Crime-Data-Analytics';
+require_once __DIR__ . '/../../helpers/url-helper.php';
 
 return [
     // Google OAuth Client ID from .env
@@ -22,7 +17,7 @@ return [
     'client_secret' => $_ENV['GOOGLE_SECRET'] ?? '',
 
     // Redirect URI (automatically adjusts for local/production)
-    'redirect_uri' => $base_url . '/api/auth/google/callback.php',
+    'redirect_uri' => getUrl('api/auth/google/callback.php'),
 
     // OAuth Scopes
     'scopes' => [
