@@ -29,6 +29,17 @@ function getUrl($path = '') {
 }
 
 /**
+ * Get redirect URL for success/error (Google OAuth compatibility)
+ * @param string $path Relative path from root
+ * @return string Full URL
+ */
+function getRedirectUrl($path) {
+    $baseUrl = getBaseUrl();
+    $path = ltrim($path, '/');
+    return rtrim($baseUrl, '/') . '/' . $path;
+}
+
+/**
  * Get current protocol (http or https)
  * @return string The protocol
  */
