@@ -99,17 +99,10 @@ try {
         if ($new_status === 'lock') {
             // Send unlock email
             require_once __DIR__ . '/../../utils/mailer.php';
+            require_once __DIR__ . '/../../helpers/url-helper.php';
 
             $unlock_token = bin2hex(random_bytes(32));
-
-            // Generate unlock link based on environment (same as Mailer class)
-            $app_env = $_ENV['APP_ENV'] ?? 'local';
-            if ($app_env === 'production') {
-                $base_url = $_ENV['DEPLOY_LINK'] ?? 'https://crime.alertaraqc.com/';
-            } else {
-                $base_url = 'http://localhost/Crime-Data-Analytics/';
-            }
-            $unlock_link = $base_url . "frontend/user-page/unlock-account.php?token=" . $unlock_token;
+            $unlock_link = getUrl("frontend/user-page/unlock-account.php?token=" . $unlock_token);
 
             // Store unlock token in database
             $token_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET unlock_token = ?, unlock_token_expiry = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?");
