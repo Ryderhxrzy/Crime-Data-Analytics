@@ -11,6 +11,20 @@ if (!isset($_SESSION['2fa_user_id'])) {
 $user_id = $_SESSION['2fa_user_id'];
 $user_email = $_SESSION['2fa_email'] ?? '';
 
+// Get OTP expiry time for timer
+$otp_expiry_stmt = $mysqli->prepare("SELECT expires_at FROM crime_department_otp_verification WHERE admin_user_id = ? AND is_used = 0 ORDER BY created_at DESC LIMIT 1");
+$otp_expiry_stmt->bind_param("i", $user_id);
+$otp_expiry_stmt->execute();
+$otp_expiry_result = $otp_expiry_stmt->get_result();
+$otp_expiry_data = $otp_expiry_result->fetch_assoc();
+$otp_expiry_stmt->close();
+
+// Calculate remaining seconds
+$remaining_seconds = 0;
+if ($otp_expiry_data) {
+    $remaining_seconds = max(0, strtotime($otp_expiry_data['expires_at']) - time());
+}
+
 // Handle OTP verification
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $otp_input = trim($_POST['otp'] ?? '');
@@ -150,9 +164,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div style="text-align: center; margin-bottom: 25px;">
                         <div id="timerContainer" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fas fa-clock" style="color: #4c8a89; font-size: 1rem;"></i>
-                            <span id="otpTimer" style="color: #4c8a89; font-weight: 600; font-size: 1rem;">2:00</span>
+                            <span id="otpTimer" style="color: #4c8a89; font-weight: 600; font-size: 1rem;" class="<?php
+                                if ($remaining_seconds <= 30) echo 'danger';
+                                elseif ($remaining_seconds <= 60) echo 'warning';
+                            ?>">
+                                <?php
+                                    $minutes = floor($remaining_seconds / 60);
+                                    $secs = $remaining_seconds % 60;
+                                    echo $minutes . ':' . str_pad($secs, 2, '0', STR_PAD_LEFT);
+                                ?>
+                            </span>
                         </div>
-                        <p id="timerExpired" style="color: #ef4444; font-size: 0.875rem; margin-top: 8px; display: none; font-weight: 500;">
+                        <p id="timerExpired" style="color: #ef4444; font-size: 0.875rem; margin-top: 8px; display: <?php echo $remaining_seconds <= 0 ? 'block' : 'none'; ?>; font-weight: 500;">
                             <i class="fas fa-exclamation-circle"></i> OTP has expired. Please login again.
                         </p>
                     </div>
@@ -160,17 +183,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <!-- OTP Input Boxes -->
                     <div class="form-group" style="margin-bottom: 30px;">
                         <div class="otp-input-container" style="display: flex; justify-content: center; gap: 10px;">
-                            <input type="text" class="otp-box" maxlength="1" data-index="0" autocomplete="off" inputmode="numeric" pattern="[0-9]">
-                            <input type="text" class="otp-box" maxlength="1" data-index="1" autocomplete="off" inputmode="numeric" pattern="[0-9]">
-                            <input type="text" class="otp-box" maxlength="1" data-index="2" autocomplete="off" inputmode="numeric" pattern="[0-9]">
-                            <input type="text" class="otp-box" maxlength="1" data-index="3" autocomplete="off" inputmode="numeric" pattern="[0-9]">
-                            <input type="text" class="otp-box" maxlength="1" data-index="4" autocomplete="off" inputmode="numeric" pattern="[0-9]">
-                            <input type="text" class="otp-box" maxlength="1" data-index="5" autocomplete="off" inputmode="numeric" pattern="[0-9]">
+                            <input type="text" class="otp-box" maxlength="1" data-index="0" autocomplete="off" inputmode="numeric" pattern="[0-9]" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
+                            <input type="text" class="otp-box" maxlength="1" data-index="1" autocomplete="off" inputmode="numeric" pattern="[0-9]" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
+                            <input type="text" class="otp-box" maxlength="1" data-index="2" autocomplete="off" inputmode="numeric" pattern="[0-9]" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
+                            <input type="text" class="otp-box" maxlength="1" data-index="3" autocomplete="off" inputmode="numeric" pattern="[0-9]" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
+                            <input type="text" class="otp-box" maxlength="1" data-index="4" autocomplete="off" inputmode="numeric" pattern="[0-9]" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
+                            <input type="text" class="otp-box" maxlength="1" data-index="5" autocomplete="off" inputmode="numeric" pattern="[0-9]" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
                         </div>
                         <input type="hidden" name="otp" id="otpValue">
                     </div>
 
-                    <button type="submit" class="btn-login" id="verifyOtpButton">
+                    <button type="submit" class="btn-login" id="verifyOtpButton" <?php echo $remaining_seconds <= 0 ? 'disabled' : ''; ?>>
                         <span class="btn-text">Verify OTP</span>
                         <span class="btn-loader" style="display: none;">
                             <span class="spinner"></span>
@@ -372,9 +395,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             otpBoxes[0].focus();
         }
 
-        // OTP Timer Function (2 minutes)
+        // OTP Timer Function - uses actual remaining time from database
         let otpTimerInterval = null;
-        let otpExpiryTime = Date.now() + (120 * 1000); // 2 minutes
+        let otpExpiryTime = Date.now() + (<?php echo $remaining_seconds; ?> * 1000);
 
         function startOtpTimer() {
             const timerElement = document.getElementById('otpTimer');
@@ -415,8 +438,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Start timer on page load
         startOtpTimer();
 
-        // Focus first box
+        // Focus first box only if not expired
+        <?php if ($remaining_seconds > 0): ?>
         otpBoxes[0].focus();
+        <?php endif; ?>
 
         // Submit OTP form function
         function submitOtpForm() {
