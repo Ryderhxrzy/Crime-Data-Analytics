@@ -22,16 +22,11 @@ class Mailer {
     private $base_url;
 
     public function __construct() {
+        require_once __DIR__ . '/../helpers/url-helper.php';
+
         $this->mail = new PHPMailer(true);
         $this->app_env = $_ENV['APP_ENV'] ?? 'local';
-
-        // Set base URL based on environment
-        if ($this->app_env === 'production') {
-            $this->base_url = $_ENV['DEPLOY_LINK'] ?? 'https://crime.alertaraqc.com/';
-        } else {
-            $this->base_url = 'http://localhost/Crime-Data-Analytics/';
-        }
-
+        $this->base_url = getBaseUrl();
         $this->configure();
     }
 
