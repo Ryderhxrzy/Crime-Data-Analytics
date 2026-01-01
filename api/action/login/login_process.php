@@ -172,7 +172,7 @@ try {
     if ($two_factor_enabled == 1) {
         // Generate 6-digit OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $otp_expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+        $otp_expiry = date('Y-m-d H:i:s', strtotime('+2 minutes'));
 
         // Delete any existing unused OTP for this user
         $delete_otp = $mysqli->prepare("DELETE FROM crime_department_otp_verification WHERE admin_user_id = ? AND is_used = 0");

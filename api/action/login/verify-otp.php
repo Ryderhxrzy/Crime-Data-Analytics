@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div style="text-align: center; margin-bottom: 25px;">
                         <div id="timerContainer" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                             <i class="fas fa-clock" style="color: #4c8a89; font-size: 1rem;"></i>
-                            <span id="otpTimer" style="color: #4c8a89; font-weight: 600; font-size: 1rem;">10:00</span>
+                            <span id="otpTimer" style="color: #4c8a89; font-weight: 600; font-size: 1rem;">2:00</span>
                         </div>
                         <p id="timerExpired" style="color: #ef4444; font-size: 0.875rem; margin-top: 8px; display: none; font-weight: 500;">
                             <i class="fas fa-exclamation-circle"></i> OTP has expired. Please login again.
@@ -370,9 +370,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             otpBoxes[0].focus();
         }
 
-        // OTP Timer Function (10 minutes)
+        // OTP Timer Function (2 minutes)
         let otpTimerInterval = null;
-        let otpExpiryTime = Date.now() + (600 * 1000); // 10 minutes
+        let otpExpiryTime = Date.now() + (120 * 1000); // 2 minutes
 
         function startOtpTimer() {
             const timerElement = document.getElementById('otpTimer');
@@ -398,10 +398,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 timerElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
 
                 // Color coding
-                if (seconds <= 60) {
+                if (seconds <= 30) {
                     timerElement.classList.remove('warning');
                     timerElement.classList.add('danger');
-                } else if (seconds <= 180) {
+                } else if (seconds <= 60) {
                     timerElement.classList.remove('danger');
                     timerElement.classList.add('warning');
                 } else {
