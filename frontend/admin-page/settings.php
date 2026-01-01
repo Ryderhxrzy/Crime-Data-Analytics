@@ -2,6 +2,7 @@
 // Authentication check - must be at the top of every admin page
 require_once '../../api/middleware/auth.php';
 require_once '../../api/config.php';
+require_once '../../api/helpers/url-helper.php';
 
 // Get user ID from session
 $user_id = $_SESSION['user']['id'] ?? null;
@@ -72,7 +73,7 @@ if (!$user_settings) {
 }
 
 // Check if production environment
-$is_production = ($_ENV['APP_ENV'] ?? 'local') === 'production';
+$is_production = isProduction();
 $php_ext = $is_production ? '' : '.php';
 ?>
 <!DOCTYPE html>
