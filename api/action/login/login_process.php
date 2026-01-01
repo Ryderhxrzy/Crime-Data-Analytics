@@ -155,10 +155,64 @@ try {
 
     $stmt->close();
 
+    // Check if 2FA is enabled
+    $settings_stmt = $mysqli->prepare("SELECT two_factor_auth FROM crime_department_user_settings WHERE admin_user_id = ? LIMIT 1");
+    $settings_stmt->bind_param("i", $user['id']);
+    $settings_stmt->execute();
+    $settings_result = $settings_stmt->get_result();
+    $user_settings = $settings_result->fetch_assoc();
+    $settings_stmt->close();
+
+    $two_factor_enabled = $user_settings['two_factor_auth'] ?? 0;
+
     // Get user IP address and user agent
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
+    if ($two_factor_enabled == 1) {
+        // Generate 6-digit OTP
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $otp_expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+
+        // Delete any existing unused OTP for this user
+        $delete_otp = $mysqli->prepare("DELETE FROM crime_department_otp_verification WHERE admin_user_id = ? AND is_used = 0");
+        $delete_otp->bind_param("i", $user['id']);
+        $delete_otp->execute();
+        $delete_otp->close();
+
+        // Insert new OTP into database
+        $otp_stmt = $mysqli->prepare("INSERT INTO crime_department_otp_verification (admin_user_id, otp_code, expires_at) VALUES (?, ?, ?)");
+        $otp_stmt->bind_param("iss", $user['id'], $otp, $otp_expiry);
+        $otp_stmt->execute();
+        $otp_stmt->close();
+
+        // Send OTP email
+        require_once __DIR__ . '/../../utils/mailer.php';
+
+        try {
+            $mailer = new Mailer();
+            $mailer->sendOTP($user['email'], $user['full_name'], $otp);
+        } catch (Exception $e) {
+            error_log("Failed to send OTP email: " . $e->getMessage());
+        }
+
+        // Store user data in session for OTP verification
+        $_SESSION['2fa_user_id'] = $user['id'];
+        $_SESSION['2fa_email'] = $user['email'];
+        $_SESSION['2fa_ip'] = $ip_address;
+
+        // Log OTP sent
+        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, '2fa_otp_sent', 'OTP sent for login verification', ?, ?)");
+        $log_stmt->bind_param("iss", $user['id'], $ip_address, $user_agent);
+        $log_stmt->execute();
+        $log_stmt->close();
+
+        // Redirect to OTP verification page
+        header('Location: verify-otp.php');
+        exit;
+    }
+
+    // Direct login (no 2FA)
     // Update user status to 'active', reset attempt count, update IP address and last_login timestamp
     $update_stmt = $mysqli->prepare("UPDATE crime_department_admin_users SET status = 'active', attempt_count = 0, ip_address = ?, last_login = NOW() WHERE id = ?");
     $update_stmt->bind_param("si", $ip_address, $user['id']);
