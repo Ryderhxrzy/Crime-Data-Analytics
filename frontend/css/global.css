@@ -806,3 +806,252 @@ html {
         order: 0;
     }
 }
+
+/* ===================================
+   OTP INPUT BOX STYLES
+   =================================== */
+.otp-timer-container {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.otp-timer-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.otp-timer-icon {
+    color: #4c8a89;
+    font-size: 1rem;
+}
+
+.otp-timer-text {
+    color: #4c8a89;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.otp-timer-expired {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+.otp-input-group {
+    margin-bottom: 30px;
+}
+
+.otp-input-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.otp-box {
+    width: 45px;
+    height: 55px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s ease;
+    background-color: #f9fafb;
+    color: #1f2937;
+    caret-color: #4c8a89;
+}
+
+.otp-box:focus {
+    border-color: #4c8a89;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(76, 138, 137, 0.1);
+    transform: scale(1.05);
+}
+
+.otp-box:disabled {
+    background-color: #e5e7eb;
+    cursor: not-allowed;
+}
+
+.otp-box.error {
+    border-color: #ef4444;
+    animation: shake 0.3s;
+}
+
+.otp-box.success {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* OTP Input Container Responsive */
+@media (max-width: 480px) {
+    .otp-box {
+        width: 38px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .otp-input-container {
+        gap: 6px !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .otp-box {
+        width: 35px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+
+    .otp-input-container {
+        gap: 4px !important;
+    }
+}
+
+/* ===================================
+   TIMER STYLES
+   =================================== */
+#otpTimer.warning {
+    color: #f59e0b;
+    animation: pulse 1s infinite;
+}
+
+#otpTimer.danger {
+    color: #ef4444;
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ===================================
+   BUTTON LOADER STYLES
+   =================================== */
+.btn-loader {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===================================
+   RESEND BUTTON STYLES
+   =================================== */
+.resend-btn:hover {
+    color: #3d6e6d !important;
+    text-decoration: underline !important;
+}
+
+.resend-btn:disabled {
+    color: #9ca3af !important;
+    cursor: not-allowed !important;
+}
+
+/* ===================================
+   FORGOT PASSWORD SPECIFIC STYLES
+   =================================== */
+.forgot-password-form {
+    display: block;
+}
+
+.forgot-password-form-hidden {
+    display: none;
+}
+
+.otp-info-container {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.otp-email-display {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.otp-email-highlight {
+    color: #4c8a89;
+}
+
+.otp-timer-wrapper {
+    margin-top: 12px;
+}
+
+.otp-input-box-container {
+    margin-bottom: 15px;
+}
+
+.form-group-spacing {
+    margin-bottom: 25px;
+}
+
+.form-group-spacing-large {
+    margin-bottom: 30px;
+}
+
+.btn-margin-top {
+    margin-top: 10px;
+}
+
+.btn-margin-bottom {
+    margin-bottom: 20px;
+}
+
+.field-error-center {
+    display: block;
+    text-align: center;
+}
+
+.resend-section {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.resend-prompt {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-bottom: 8px;
+}
+
+.icon-margin-right {
+    margin-right: 5px;
+}
+
+.back-section {
+    text-align: center;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
