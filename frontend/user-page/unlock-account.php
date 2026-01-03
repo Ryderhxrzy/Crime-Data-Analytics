@@ -175,17 +175,11 @@ $mysqli->close();
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/alert-utils.js"></script>
+    <script src="../js/unlock-account.js"></script>
     <script>
-        // Show success notification (no auto-redirect)
-        Swal.fire({
-            icon: 'success',
-            title: 'Account Unlocked!',
-            text: 'Your account has been successfully unlocked. Click the button below to login.',
-            confirmButtonColor: '#4c8a89',
-            confirmButtonText: 'OK',
-            allowOutsideClick: true,
-            allowEscapeKey: true
-        });
+        // Initialize unlock account success message
+        initUnlockAccount();
     </script>
 </body>
 </html>

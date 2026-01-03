@@ -151,33 +151,14 @@ unset($_SESSION['flash_success']);
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="frontend/js/alert-utils.js"></script>
+    <script src="frontend/js/login-messages.js"></script>
     <script src="frontend/js/login.js"></script>
     <script>
-        // Handle URL parameters for success/error messages
-        const urlParams = new URLSearchParams(window.location.search);
-        const success = urlParams.get('success');
-        const error = urlParams.get('error');
-
-        // Handle flash messages from PHP session
-        <?php if ($flash_success): ?>
-        AlertUtils.successWithTimer('Success!', <?php echo json_encode($flash_success); ?>, 3000);
-        <?php elseif ($flash_error): ?>
-        AlertUtils.error('Error!', <?php echo json_encode($flash_error); ?>);
-        <?php endif; ?>
-
-        if (success) {
-            AlertUtils.successWithTimer('Success!', success, 3000, function() {
-                // Clear URL parameters
-                window.history.replaceState({}, document.title, window.location.pathname);
-            });
-        }
-
-        if (error) {
-            AlertUtils.error('Error!', error, function() {
-                // Clear URL parameters
-                window.history.replaceState({}, document.title, window.location.pathname);
-            });
-        }
+        // Initialize login messages
+        initLoginMessages(
+            <?php echo $flash_success ? json_encode($flash_success) : 'null'; ?>,
+            <?php echo $flash_error ? json_encode($flash_error) : 'null'; ?>
+        );
     </script>
 </body>
 </html>

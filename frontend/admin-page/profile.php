@@ -356,37 +356,10 @@ if (!empty($profile_picture_data)) {
         <?php include('../includes/admin-footer.php') ?>
     </div>
 
+    <script src="../js/profile.js"></script>
     <script>
-        // Check for success/error messages in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const success = urlParams.get('success');
-        const error = urlParams.get('error');
-
-        if (success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: success,
-                confirmButtonColor: '#4c8a89',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                // Remove query parameters from URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            });
-        }
-
-        if (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: error,
-                confirmButtonColor: '#4c8a89',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                // Remove query parameters from URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            });
-        }
+        // Initialize profile page
+        initProfile();
     </script>
 </body>
 </html>
