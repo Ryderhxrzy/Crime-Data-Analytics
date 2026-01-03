@@ -1,14 +1,11 @@
 <?php
-// Start session
-session_start();
+/**
+ * Forgot Password View
+ * Displays forgot password form with OTP verification
+ */
 
-// Get flash messages from session
-$flash_error = $_SESSION['flash_error'] ?? null;
-$flash_success = $_SESSION['flash_success'] ?? null;
-
-// Clear flash messages
-unset($_SESSION['flash_error']);
-unset($_SESSION['flash_success']);
+// Load forgot password data controller
+require_once '../../api/retrieve/forgot-password-data.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
