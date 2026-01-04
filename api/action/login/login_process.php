@@ -26,7 +26,7 @@ if ($mysqli->connect_error) {
 }
 
 try {
-    $stmt = $mysqli->prepare("SELECT id, email, password, full_name, role, status, account_status, registration_type, attempt_count FROM crime_department_admin_users WHERE email = ? LIMIT 1");
+    $stmt = $mysqli->prepare("SELECT id, email, password, full_name, role, status, account_status, registration_type, attempt_count, ip_address FROM crime_department_admin_users WHERE email = ? LIMIT 1");
 
     if (!$stmt) {
         throw new Exception("Database preparation failed: " . $mysqli->error);
@@ -169,7 +169,12 @@ try {
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? null;
     $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
-    if ($two_factor_enabled == 1) {
+    // Check if IP address has changed (unusual login location)
+    $stored_ip = $user['ip_address'] ?? null;
+    $ip_changed = ($stored_ip !== null && $stored_ip !== $ip_address);
+
+    // Trigger 2FA if either: 2FA is enabled OR IP address is different (unusual login)
+    if ($two_factor_enabled == 1 || $ip_changed) {
         // Generate 6-digit OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $otp_expiry = date('Y-m-d H:i:s', strtotime('+2 minutes'));
@@ -201,9 +206,10 @@ try {
         $_SESSION['2fa_email'] = $user['email'];
         $_SESSION['2fa_ip'] = $ip_address;
 
-        // Log OTP sent
-        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, '2fa_otp_sent', 'OTP sent for login verification', ?, ?)");
-        $log_stmt->bind_param("iss", $user['id'], $ip_address, $user_agent);
+        // Log OTP sent with reason
+        $otp_reason = $ip_changed ? 'OTP sent for login verification - unusual IP address detected' : 'OTP sent for login verification - 2FA enabled';
+        $log_stmt = $mysqli->prepare("INSERT INTO crime_department_activity_logs (admin_user_id, activity_type, description, ip_address, user_agent) VALUES (?, '2fa_otp_sent', ?, ?, ?)");
+        $log_stmt->bind_param("isss", $user['id'], $otp_reason, $ip_address, $user_agent);
         $log_stmt->execute();
         $log_stmt->close();
 
