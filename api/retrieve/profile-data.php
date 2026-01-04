@@ -3,10 +3,10 @@
  * Profile Data Controller
  * Retrieves user profile information and additional details
  */
-
+session_start();    
 // Authentication check
-require_once '../middleware/auth.php';
-require_once '../config.php';
+require_once '../../api/middleware/auth.php';
+require_once '../../api/config.php';
 
 // Get user ID from session
 $user_id = $_SESSION['user']['id'] ?? null;

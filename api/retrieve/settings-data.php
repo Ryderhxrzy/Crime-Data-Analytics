@@ -3,11 +3,11 @@
  * Settings Data Controller
  * Retrieves user settings and profile information
  */
-
+session_start();
 // Authentication check
-require_once '../middleware/auth.php';
-require_once '../config.php';
-require_once '../helpers/url-helper.php';
+require_once '../../api/middleware/auth.php';
+require_once '../../api/config.php';
+require_once '../../api/helpers/url-helper.php';
 
 // Get user ID from session
 $user_id = $_SESSION['user']['id'] ?? null;
