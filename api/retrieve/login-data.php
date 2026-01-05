@@ -15,7 +15,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
         $_SESSION['last_activity'] = time();
 
         // Redirect to system overview page
-        header('Location: ../../frontend/admin-page/system-overview.php');
+        header('Location: frontend/admin-page/system-overview.php');
         exit;
     }
 }
