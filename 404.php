@@ -7,10 +7,10 @@ http_response_code(404);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found | Crime Data Analytics</title>
-    <link rel="stylesheet" href="/frontend/css/global.css">
-    <link rel="stylesheet" href="/frontend/css/404.css">
+    <link rel="stylesheet" href="https://crime.alertaraqc.com/frontend/css/global.css">
+    <link rel="stylesheet" href="https://crime.alertaraqc.com/frontend/css/404.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="/frontend/image/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://crime.alertaraqc.com/frontend/image/favicon.ico">
 </head>
 <body>
     <div class="error-page-wrapper">
