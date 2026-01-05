@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="frontend/css/global.css">
     <link rel="stylesheet" href="frontend/css/404.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="frontend/image/favicon.ico">
 </head>
 <body>
     <div class="error-page-wrapper">
