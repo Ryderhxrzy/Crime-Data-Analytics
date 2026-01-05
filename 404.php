@@ -1,13 +1,16 @@
+<?php
+http_response_code(404);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Page Not Found | Crime Data Analytics</title>
-    <link rel="stylesheet" href="frontend/css/global.css">
-    <link rel="stylesheet" href="frontend/css/404.css">
+    <link rel="stylesheet" href="/frontend/css/global.css">
+    <link rel="stylesheet" href="/frontend/css/404.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="frontend/image/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/frontend/image/favicon.ico">
 </head>
 <body>
     <div class="error-page-wrapper">
@@ -27,7 +30,7 @@
                     <i class="fas fa-arrow-left"></i>
                     Go Back
                 </a>
-                <a href="index.php" class="error-btn error-btn-primary">
+                <a href="/" class="error-btn error-btn-primary">
                     <i class="fas fa-home"></i>
                     Back to Home
                 </a>
@@ -38,7 +41,7 @@
                 <ul class="suggestions-list">
                     <li>
                         <i class="fas fa-check-circle"></i>
-                        <a href="index.php">Login to your account</a>
+                        <a href="/">Login to your account</a>
                     </li>
                     <li>
                         <i class="fas fa-check-circle"></i>
