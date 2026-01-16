@@ -21,7 +21,9 @@ require_once '../../api/middleware/auth.php';
     <link rel="icon" type="image/x-icon" href="../image/favicon.ico">
     <style>
         #crime-map {
-            height: 500px;
+            height: calc(100vh - 350px);
+            min-height: 500px;
+            max-height: 800px;
             width: 100%;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -279,21 +281,119 @@ require_once '../../api/middleware/auth.php';
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing map...');
-            
+
             // Initialize map centered on Quezon City
             const mapContainer = document.getElementById('crime-map');
             if (!mapContainer) {
                 console.error('Map container not found!');
                 return;
             }
-            
-            const map = L.map('crime-map').setView([14.6760, 121.0437], 12);
-            
-            // Add OpenStreetMap tiles (more reliable)
+
+            // Quezon City boundary polygon (accurate outline)
+            const quezonCityPolygon = [
+                // Northern boundary (Novaliches/Caloocan border)
+                [14.7650, 121.0000],
+                [14.7600, 121.0100],
+                [14.7550, 121.0200],
+                [14.7500, 121.0300],
+                [14.7450, 121.0400],
+                [14.7400, 121.0500],
+                // Northeast (towards Marikina/San Mateo)
+                [14.7300, 121.0600],
+                [14.7200, 121.0700],
+                [14.7100, 121.0800],
+                [14.7000, 121.0900],
+                [14.6900, 121.1000],
+                // East boundary (Marikina border)
+                [14.6700, 121.1050],
+                [14.6500, 121.1000],
+                [14.6300, 121.0900],
+                // Southeast (towards Pasig/Mandaluyong)
+                [14.6100, 121.0800],
+                [14.5950, 121.0700],
+                [14.5900, 121.0600],
+                // South boundary (Mandaluyong/San Juan border)
+                [14.5850, 121.0500],
+                [14.5900, 121.0400],
+                [14.5950, 121.0300],
+                [14.6000, 121.0200],
+                // Southwest (towards Manila)
+                [14.6050, 121.0100],
+                [14.6100, 121.0000],
+                [14.6150, 120.9950],
+                // West boundary (Caloocan border)
+                [14.6300, 120.9900],
+                [14.6500, 120.9850],
+                [14.6700, 120.9900],
+                [14.6900, 120.9950],
+                [14.7100, 121.0000],
+                [14.7300, 120.9950],
+                [14.7500, 120.9900],
+                // Back to start
+                [14.7650, 121.0000]
+            ];
+
+            // Calculate bounds from QC polygon
+            const quezonCityBounds = L.latLngBounds(quezonCityPolygon);
+
+            // Strict bounds for Quezon City only
+            const strictBounds = L.latLngBounds(
+                [14.5800, 120.9800], // Southwest
+                [14.7700, 121.1100]  // Northeast
+            );
+
+            // Initialize map with restrictions
+            const map = L.map('crime-map', {
+                center: [14.6500, 121.0400],
+                zoom: 13,
+                minZoom: 12,
+                maxZoom: 18,
+                maxBounds: strictBounds,
+                maxBoundsViscosity: 1.0
+            });
+
+            // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19
+                maxZoom: 18
             }).addTo(map);
+
+            // Create outer bounds for the mask (covers the world)
+            const outerBounds = [
+                [-90, -180],
+                [-90, 180],
+                [90, 180],
+                [90, -180],
+                [-90, -180]
+            ];
+
+            // Create mask layer to gray out/disable areas outside QC
+            const maskLayer = L.polygon([outerBounds, quezonCityPolygon], {
+                color: 'transparent',
+                fillColor: '#111827',
+                fillOpacity: 0.85,
+                interactive: false
+            }).addTo(map);
+
+            // Add Quezon City boundary overlay
+            L.polygon(quezonCityPolygon, {
+                color: '#4c8a89',
+                weight: 4,
+                opacity: 1,
+                fillColor: 'transparent',
+                fillOpacity: 0
+            }).addTo(map).bindPopup('<strong>Quezon City</strong><br>Crime Data Analytics Coverage Area');
+
+            // Function to auto-zoom map to fit crime markers
+            function fitMapToCrimes(crimesArray) {
+                if (crimesArray.length === 0) {
+                    map.fitBounds(quezonCityBounds, { padding: [50, 50] });
+                    return;
+                }
+                const crimePoints = crimesArray.map(crime => [crime.lat, crime.lng]);
+                const crimeBounds = L.latLngBounds(crimePoints);
+                map.fitBounds(crimeBounds, { padding: [50, 50], maxZoom: 15 });
+            }
 
             // Crime type colors
             const crimeColors = {
@@ -442,29 +542,30 @@ require_once '../../api/middleware/auth.php';
             function createHeatmap(data) {
                 if (heatmapLayer) {
                     map.removeLayer(heatmapLayer);
+                    heatmapLayer = null;
                 }
-                
+
                 if (data.length === 0) {
                     console.log('No data for heatmap');
                     return;
                 }
-                
+
                 const points = data.map(crime => [crime.lat, crime.lng, 1]);
-                
+
                 heatmapLayer = L.heatLayer(points, {
-                    radius: 25,
-                    blur: 15,
+                    radius: 30,
+                    blur: 20,
                     maxZoom: 17,
-                    minOpacity: 0.3,
+                    minOpacity: 0.4,
                     gradient: {
-                        0.1: 'rgba(0, 0, 255, 0.3)',
-                        0.3: 'rgba(0, 255, 255, 0.5)',
-                        0.5: 'rgba(0, 255, 0, 0.7)',
-                        0.7: 'rgba(255, 255, 0, 0.8)',
-                        1.0: 'rgba(255, 0, 0, 0.9)'
+                        0.0: '#22c55e',
+                        0.25: '#84cc16',
+                        0.5: '#eab308',
+                        0.75: '#f97316',
+                        1.0: '#dc2626'
                     }
                 }).addTo(map);
-                
+
                 // Add gradient legend
                 addGradientLegend();
             }
@@ -473,8 +574,14 @@ require_once '../../api/middleware/auth.php';
             function createClusterLayer(data) {
                 if (clusterLayer) {
                     map.removeLayer(clusterLayer);
+                    clusterLayer = null;
                 }
-                
+
+                if (data.length === 0) {
+                    console.log('No data for cluster');
+                    return;
+                }
+
                 const markerClusterGroup = L.markerClusterGroup({
                     chunkedLoading: true,
                     spiderfyOnMaxZoom: true,
@@ -558,10 +665,11 @@ require_once '../../api/middleware/auth.php';
             function addGradientLegend() {
                 if (currentLegend) {
                     map.removeControl(currentLegend);
+                    currentLegend = null;
                 }
-                
+
                 const legend = L.control({ position: 'bottomright' });
-                
+
                 legend.onAdd = function() {
                     const div = L.DomUtil.create('div', 'gradient-legend');
                     div.innerHTML = `
@@ -577,12 +685,12 @@ require_once '../../api/middleware/auth.php';
                             <div style="
                                 width: 150px;
                                 height: 12px;
-                                background: linear-gradient(to right, 
-                                    rgba(0, 0, 255, 0.3),
-                                    rgba(0, 255, 255, 0.5),
-                                    rgba(0, 255, 0, 0.7),
-                                    rgba(255, 255, 0, 0.8),
-                                    rgba(255, 0, 0, 0.9)
+                                background: linear-gradient(to right,
+                                    #22c55e,
+                                    #84cc16,
+                                    #eab308,
+                                    #f97316,
+                                    #dc2626
                                 );
                                 margin: 5px 0;
                                 border-radius: 2px;
@@ -595,7 +703,7 @@ require_once '../../api/middleware/auth.php';
                     `;
                     return div;
                 };
-                
+
                 legend.addTo(map);
                 currentLegend = legend;
             }
@@ -604,17 +712,17 @@ require_once '../../api/middleware/auth.php';
             function updateVisualization() {
                 const filteredData = getFilteredCrimes();
                 currentMode = document.getElementById('visualization-mode').value;
-                
+
                 // Remove existing layers
                 if (heatmapLayer) map.removeLayer(heatmapLayer);
                 if (clusterLayer) map.removeLayer(clusterLayer);
                 clearMarkers();
-                
+
                 if (currentLegend) {
                     map.removeControl(currentLegend);
                     currentLegend = null;
                 }
-                
+
                 // Apply new visualization
                 switch(currentMode) {
                     case 'heatmap':
@@ -627,8 +735,11 @@ require_once '../../api/middleware/auth.php';
                         createIndividualMarkers(filteredData);
                         break;
                 }
-                
+
                 updateStats();
+
+                // Auto-zoom to fit filtered crime markers
+                fitMapToCrimes(filteredData);
             }
 
             // Get filtered crimes
@@ -749,15 +860,7 @@ require_once '../../api/middleware/auth.php';
             // Initialize controls
             addHeatmapControls();
 
-            // Set default dates
-            const today = new Date().toISOString().split('T')[0];
-            const lastWeek = new Date();
-            lastWeek.setDate(lastWeek.getDate() - 7);
-            const lastWeekStr = lastWeek.toISOString().split('T')[0];
-            
-            document.getElementById('date-from').value = lastWeekStr;
-            document.getElementById('date-to').value = today;
-            
+            // Don't set default dates - show all data initially
             console.log('Map initialized successfully!');
         });
     </script>
