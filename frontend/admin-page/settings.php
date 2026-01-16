@@ -324,13 +324,6 @@ require_once '../../api/retrieve/settings-data.php';
                                 </div>
                             </div>
 
-                            <div class="alert alert-warning" style="margin-top: 1rem;">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <div>
-                                    <strong>Coming Soon</strong>
-                                    <p>Two-factor authentication feature is currently under development.</p>
-                                </div>
-                            </div>
                             <?php else: ?>
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle"></i>
