@@ -2,7 +2,9 @@
    CRIME MAPPING - MAP CONTAINER
    =================================== */
 #crime-map {
-    height: 600px;
+    height: calc(100vh - 350px);
+    min-height: 500px;
+    max-height: 800px;
     width: 100%;
     border-radius: 8px;
     border: 1px solid var(--border-color-1);
@@ -668,7 +670,9 @@
    =================================== */
 @media (max-width: 768px) {
     #crime-map {
-        height: 400px;
+        height: calc(100vh - 300px);
+        min-height: 400px;
+        max-height: 600px;
     }
 
     .crime-stats {
@@ -704,7 +708,9 @@
 
 @media (max-width: 480px) {
     #crime-map {
-        height: 350px;
+        height: calc(100vh - 280px);
+        min-height: 350px;
+        max-height: 500px;
     }
 
     .crime-stats {
