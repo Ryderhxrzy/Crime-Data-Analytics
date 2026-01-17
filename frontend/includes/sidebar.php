@@ -187,12 +187,12 @@ if ($sidebar_user_id) {
                                     <span>Clearance Rates</span>
                                 </a>
                             </li>
-                            <li>
+                            <!--<li>
                                 <a href="response-metrics.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'response-metrics.php' ? 'active' : ''; ?>">
                                     <i class="fas fa-stopwatch"></i>
                                     <span>Response Times</span>
                                 </a>
-                            </li>
+                            </li>-->
                         </ul>
                     </li>
                 </ul>
