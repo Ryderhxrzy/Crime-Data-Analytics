@@ -1,6 +1,147 @@
 <?php
 // Authentication check - must be at the top of every admin page
 require_once '../../api/middleware/auth.php';
+require_once '../../api/config.php';
+
+// Fetch statistics from database
+$today = date('Y-m-d');
+$yesterday = date('Y-m-d', strtotime('-1 day'));
+$monthStart = date('Y-m-01');
+$lastMonthStart = date('Y-m-01', strtotime('-1 month'));
+$lastMonthEnd = date('Y-m-t', strtotime('-1 month'));
+$weekAgo = date('Y-m-d', strtotime('-7 days'));
+
+// Total crimes
+$totalQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents";
+$totalResult = $mysqli->query($totalQuery);
+$totalCrimes = $totalResult->fetch_assoc()['total'];
+
+// Today's crimes
+$todayQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents WHERE incident_date = '$today'";
+$todayResult = $mysqli->query($todayQuery);
+$todayCrimes = $todayResult->fetch_assoc()['total'];
+
+// Yesterday's crimes
+$yesterdayQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents WHERE incident_date = '$yesterday'";
+$yesterdayResult = $mysqli->query($yesterdayQuery);
+$yesterdayCrimes = $yesterdayResult->fetch_assoc()['total'];
+
+// This month's crimes
+$thisMonthQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents WHERE incident_date >= '$monthStart'";
+$thisMonthResult = $mysqli->query($thisMonthQuery);
+$thisMonthCrimes = $thisMonthResult->fetch_assoc()['total'];
+
+// Last month's crimes
+$lastMonthQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents WHERE incident_date BETWEEN '$lastMonthStart' AND '$lastMonthEnd'";
+$lastMonthResult = $mysqli->query($lastMonthQuery);
+$lastMonthCrimes = $lastMonthResult->fetch_assoc()['total'];
+
+// Resolved cases
+$resolvedQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents WHERE clearance_status = 'cleared'";
+$resolvedResult = $mysqli->query($resolvedQuery);
+$resolvedCases = $resolvedResult->fetch_assoc()['total'];
+
+// Calculate trends
+$dailyTrend = $yesterdayCrimes > 0 ? round((($todayCrimes - $yesterdayCrimes) / $yesterdayCrimes) * 100, 1) : 0;
+$monthlyTrend = $lastMonthCrimes > 0 ? round((($thisMonthCrimes - $lastMonthCrimes) / $lastMonthCrimes) * 100, 1) : 0;
+$resolutionRate = $totalCrimes > 0 ? round(($resolvedCases / $totalCrimes) * 100, 1) : 0;
+
+// Get crime counts by status
+$statusQuery = "SELECT status, COUNT(*) as count FROM crime_department_crime_incidents GROUP BY status";
+$statusResult = $mysqli->query($statusQuery);
+$statusCounts = ['reported' => 0, 'under_investigation' => 0, 'resolved' => 0, 'closed' => 0];
+while ($row = $statusResult->fetch_assoc()) {
+    $statusCounts[$row['status']] = (int)$row['count'];
+}
+
+// Get latest incidents
+$latestQuery = "
+    SELECT
+        ci.id,
+        ci.incident_code,
+        ci.incident_title,
+        ci.incident_description,
+        ci.incident_date,
+        ci.incident_time,
+        ci.status,
+        ci.clearance_status,
+        cc.category_name,
+        cc.icon as category_icon,
+        cc.color as category_color,
+        b.barangay_name,
+        b.district
+    FROM crime_department_crime_incidents ci
+    LEFT JOIN crime_department_crime_categories cc ON ci.crime_category_id = cc.id
+    LEFT JOIN crime_department_barangays b ON ci.barangay_id = b.id
+    ORDER BY ci.incident_date DESC, ci.incident_time DESC
+    LIMIT 5
+";
+$latestResult = $mysqli->query($latestQuery);
+$latestIncidents = [];
+while ($row = $latestResult->fetch_assoc()) {
+    $latestIncidents[] = $row;
+}
+
+// Get crime statistics by category for period tabs
+$periodStatsQuery = "
+    SELECT
+        cc.category_name,
+        COUNT(*) as count
+    FROM crime_department_crime_incidents ci
+    LEFT JOIN crime_department_crime_categories cc ON ci.crime_category_id = cc.id
+    WHERE ci.incident_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+    GROUP BY cc.id
+    ORDER BY count DESC
+    LIMIT 6
+";
+$periodStatsResult = $mysqli->query($periodStatsQuery);
+$weekStats = [];
+while ($row = $periodStatsResult->fetch_assoc()) {
+    $weekStats[] = $row;
+}
+
+// Calculate time ago
+function timeAgo($datetime) {
+    $timestamp = strtotime($datetime);
+    $diff = time() - $timestamp;
+
+    if ($diff < 60) return 'just now';
+    if ($diff < 3600) return floor($diff / 60) . ' min ago';
+    if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
+    if ($diff < 604800) return floor($diff / 86400) . ' days ago';
+    return date('M d, Y', $timestamp);
+}
+
+// Get status class for incidents
+function getStatusClass($status) {
+    switch ($status) {
+        case 'reported': return 'theft';
+        case 'under_investigation': return 'assault';
+        case 'resolved': return 'fraud';
+        case 'closed': return 'vandalism';
+        default: return 'theft';
+    }
+}
+
+function getStatusIcon($status) {
+    switch ($status) {
+        case 'reported': return 'fa-file-alt';
+        case 'under_investigation': return 'fa-search';
+        case 'resolved': return 'fa-check-circle';
+        case 'closed': return 'fa-archive';
+        default: return 'fa-file-alt';
+    }
+}
+
+function getStatusLabel($status) {
+    switch ($status) {
+        case 'reported': return 'Reported';
+        case 'under_investigation': return 'Under Investigation';
+        case 'resolved': return 'Resolved';
+        case 'closed': return 'Closed';
+        default: return ucfirst($status);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -40,7 +181,7 @@ require_once '../../api/middleware/auth.php';
                 <h1>System Overview</h1>
                 <p>Real-time monitoring and comprehensive analytics of crime data across all districts. Track incidents, manage alerts, and gain insights into crime patterns and trends.</p>
             </div>
-            
+
             <div class="sub-container">
                 <div class="page-content">
                     <!-- Main Statistics Dashboard -->
@@ -53,12 +194,12 @@ require_once '../../api/middleware/auth.php';
                                 </div>
                                 <div class="stat-card-info">
                                     <div class="stat-card-label">Total Crimes</div>
-                                    <div class="stat-card-value">12,847</div>
+                                    <div class="stat-card-value"><?php echo number_format($totalCrimes); ?></div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
-                                <span class="stat-trend up">
-                                    <i class="fas fa-arrow-up"></i> 5.2%
+                                <span class="stat-trend <?php echo $monthlyTrend >= 0 ? 'up' : 'down'; ?>">
+                                    <i class="fas fa-arrow-<?php echo $monthlyTrend >= 0 ? 'up' : 'down'; ?>"></i> <?php echo abs($monthlyTrend); ?>%
                                 </span>
                                 <span style="margin-left: 0.5rem;">vs last month</span>
                             </div>
@@ -72,31 +213,31 @@ require_once '../../api/middleware/auth.php';
                                 </div>
                                 <div class="stat-card-info">
                                     <div class="stat-card-label">Crimes Today</div>
-                                    <div class="stat-card-value">47</div>
+                                    <div class="stat-card-value"><?php echo number_format($todayCrimes); ?></div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
-                                <span class="stat-trend down">
-                                    <i class="fas fa-arrow-down"></i> 2.1%
+                                <span class="stat-trend <?php echo $dailyTrend >= 0 ? 'up' : 'down'; ?>">
+                                    <i class="fas fa-arrow-<?php echo $dailyTrend >= 0 ? 'up' : 'down'; ?>"></i> <?php echo abs($dailyTrend); ?>%
                                 </span>
                                 <span style="margin-left: 0.5rem;">vs yesterday</span>
                             </div>
                         </div>
 
-                        <!-- Active Alerts Card -->
+                        <!-- Active Cases Card -->
                         <div class="stat-card">
                             <div class="stat-card-header">
                                 <div class="stat-card-icon warning">
-                                    <i class="fas fa-bell"></i>
+                                    <i class="fas fa-search"></i>
                                 </div>
                                 <div class="stat-card-info">
-                                    <div class="stat-card-label">Active Alerts</div>
-                                    <div class="stat-card-value">23</div>
+                                    <div class="stat-card-label">Under Investigation</div>
+                                    <div class="stat-card-value"><?php echo number_format($statusCounts['under_investigation']); ?></div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
                                 <span style="color: var(--text-secondary-1);">
-                                    8 Critical • 10 High • 5 Medium
+                                    <?php echo number_format($statusCounts['reported']); ?> Reported
                                 </span>
                             </div>
                         </div>
@@ -109,11 +250,11 @@ require_once '../../api/middleware/auth.php';
                                 </div>
                                 <div class="stat-card-info">
                                     <div class="stat-card-label">Resolved Cases</div>
-                                    <div class="stat-card-value">8,392</div>
+                                    <div class="stat-card-value"><?php echo number_format($resolvedCases); ?></div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
-                                <span style="color: var(--success-color); font-weight: 600;">65.3%</span>
+                                <span style="color: var(--success-color); font-weight: 600;"><?php echo $resolutionRate; ?>%</span>
                                 <span style="margin-left: 0.5rem;">resolution rate</span>
                             </div>
                         </div>
@@ -133,119 +274,8 @@ require_once '../../api/middleware/auth.php';
                         </div>
 
                         <div class="quick-stats-grid" id="period-stats">
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">324</div>
-                                <div class="quick-stat-label">Total Incidents</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">89</div>
-                                <div class="quick-stat-label">Thefts</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">56</div>
-                                <div class="quick-stat-label">Assaults</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">42</div>
-                                <div class="quick-stat-label">Vandalism</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">67</div>
-                                <div class="quick-stat-label">Burglaries</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">70</div>
-                                <div class="quick-stat-label">Other Crimes</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Active Alerts Section -->
-                    <div class="incidents-section">
-                        <div class="section-header">
-                            <h2 class="section-title">Active Alerts</h2>
-                            <a href="#" class="view-all-btn">
-                                View All Alerts <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-
-                        <div class="alerts-grid">
-                            <div class="alert-card critical">
-                                <div class="alert-title">
-                                    <i class="fas fa-exclamation-circle"></i> Armed Robbery in Progress
-                                </div>
-                                <div class="alert-message">
-                                    Multiple reports of armed robbery at Downtown Shopping District. Units dispatched to the scene.
-                                </div>
-                                <div class="alert-footer">
-                                    <span class="alert-priority critical">CRITICAL</span>
-                                    <span class="alert-time">5 min ago</span>
-                                </div>
-                            </div>
-
-                            <div class="alert-card critical">
-                                <div class="alert-title">
-                                    <i class="fas fa-exclamation-circle"></i> Multiple Break-ins Reported
-                                </div>
-                                <div class="alert-message">
-                                    Pattern detected: 5 residential break-ins in North District within 2 hours.
-                                </div>
-                                <div class="alert-footer">
-                                    <span class="alert-priority critical">CRITICAL</span>
-                                    <span class="alert-time">12 min ago</span>
-                                </div>
-                            </div>
-
-                            <div class="alert-card high">
-                                <div class="alert-title">
-                                    <i class="fas fa-exclamation-triangle"></i> Vehicle Theft Spike
-                                </div>
-                                <div class="alert-message">
-                                    Unusual increase in vehicle theft reports in East District parking areas.
-                                </div>
-                                <div class="alert-footer">
-                                    <span class="alert-priority high">HIGH</span>
-                                    <span class="alert-time">28 min ago</span>
-                                </div>
-                            </div>
-
-                            <div class="alert-card high">
-                                <div class="alert-title">
-                                    <i class="fas fa-exclamation-triangle"></i> Suspicious Activity Pattern
-                                </div>
-                                <div class="alert-message">
-                                    Repeated suspicious activity reports near Central Park area after dark.
-                                </div>
-                                <div class="alert-footer">
-                                    <span class="alert-priority high">HIGH</span>
-                                    <span class="alert-time">1 hour ago</span>
-                                </div>
-                            </div>
-
-                            <div class="alert-card medium">
-                                <div class="alert-title">
-                                    <i class="fas fa-info-circle"></i> Weekend Crime Forecast
-                                </div>
-                                <div class="alert-message">
-                                    Based on historical data, increased patrols recommended for South District this weekend.
-                                </div>
-                                <div class="alert-footer">
-                                    <span class="alert-priority medium">MEDIUM</span>
-                                    <span class="alert-time">2 hours ago</span>
-                                </div>
-                            </div>
-
-                            <div class="alert-card medium">
-                                <div class="alert-title">
-                                    <i class="fas fa-info-circle"></i> System Maintenance Scheduled
-                                </div>
-                                <div class="alert-message">
-                                    Database optimization scheduled for tonight at 2:00 AM. Expected downtime: 30 minutes.
-                                </div>
-                                <div class="alert-footer">
-                                    <span class="alert-priority medium">MEDIUM</span>
-                                    <span class="alert-time">3 hours ago</span>
-                                </div>
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i> Loading statistics...
                             </div>
                         </div>
                     </div>
@@ -254,172 +284,59 @@ require_once '../../api/middleware/auth.php';
                     <div class="incidents-section">
                         <div class="section-header">
                             <h2 class="section-title">Latest Recorded Incidents</h2>
-                            <a href="#" class="view-all-btn">
+                            <a href="crime-mapping.php" class="view-all-btn">
                                 View All Incidents <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
 
-                        <div class="incident-card">
-                            <div class="incident-header">
-                                <span class="incident-type theft">
-                                    <i class="fas fa-user-secret"></i> Armed Robbery
-                                </span>
-                                <span class="incident-time">15 minutes ago</span>
+                        <?php if (empty($latestIncidents)): ?>
+                            <div class="no-data-message">
+                                <i class="fas fa-inbox"></i>
+                                <p>No incidents recorded yet.</p>
                             </div>
-                            <div class="incident-description">
-                                Armed robbery reported at First National Bank, Downtown Branch. Two suspects fled the scene in a dark sedan. No injuries reported.
-                            </div>
-                            <div class="incident-meta">
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Downtown District
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-fingerprint"></i>
-                                    Case #2024-12847
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-user-shield"></i>
-                                    Officers dispatched
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="incident-card">
-                            <div class="incident-header">
-                                <span class="incident-type assault">
-                                    <i class="fas fa-fist-raised"></i> Assault
-                                </span>
-                                <span class="incident-time">1 hour ago</span>
-                            </div>
-                            <div class="incident-description">
-                                Physical altercation between two individuals at Main Street Bar. One victim transported to hospital with minor injuries. Suspect in custody.
-                            </div>
-                            <div class="incident-meta">
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    Central District
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-fingerprint"></i>
-                                    Case #2024-12846
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    Suspect arrested
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="incident-card">
-                            <div class="incident-header">
-                                <span class="incident-type theft">
-                                    <i class="fas fa-car"></i> Vehicle Theft
-                                </span>
-                                <span class="incident-time">2 hours ago</span>
-                            </div>
-                            <div class="incident-description">
-                                Blue Honda Civic reported stolen from residential parking lot on Oak Avenue. Security footage being reviewed.
-                            </div>
-                            <div class="incident-meta">
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    East District
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-fingerprint"></i>
-                                    Case #2024-12845
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-search"></i>
-                                    Under investigation
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="incident-card">
-                            <div class="incident-header">
-                                <span class="incident-type vandalism">
-                                    <i class="fas fa-spray-can"></i> Vandalism
-                                </span>
-                                <span class="incident-time">3 hours ago</span>
-                            </div>
-                            <div class="incident-description">
-                                Graffiti reported on public property at City Park. Parks department notified for cleanup. Investigation ongoing.
-                            </div>
-                            <div class="incident-meta">
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    South District
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-fingerprint"></i>
-                                    Case #2024-12844
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-search"></i>
-                                    Under investigation
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="incident-card">
-                            <div class="incident-header">
-                                <span class="incident-type fraud">
-                                    <i class="fas fa-credit-card"></i> Fraud
-                                </span>
-                                <span class="incident-time">5 hours ago</span>
-                            </div>
-                            <div class="incident-description">
-                                Credit card fraud reported by local resident. Multiple unauthorized transactions detected. Financial crimes unit investigating.
-                            </div>
-                            <div class="incident-meta">
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    West District
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-fingerprint"></i>
-                                    Case #2024-12843
-                                </span>
-                                <span class="incident-meta-item">
-                                    <i class="fas fa-search"></i>
-                                    Under investigation
-                                </span>
-                            </div>
-                        </div>
+                        <?php else: ?>
+                            <?php foreach ($latestIncidents as $incident): ?>
+                                <div class="incident-card">
+                                    <div class="incident-header">
+                                        <span class="incident-type <?php echo getStatusClass($incident['status']); ?>">
+                                            <i class="fas <?php echo $incident['category_icon'] ?? 'fa-exclamation-circle'; ?>"></i>
+                                            <?php echo htmlspecialchars($incident['category_name'] ?? 'Unknown'); ?>
+                                        </span>
+                                        <span class="incident-time"><?php echo timeAgo($incident['incident_date'] . ' ' . $incident['incident_time']); ?></span>
+                                    </div>
+                                    <div class="incident-description">
+                                        <strong><?php echo htmlspecialchars($incident['incident_title']); ?></strong><br>
+                                        <?php echo htmlspecialchars(substr($incident['incident_description'], 0, 200)); ?>
+                                        <?php echo strlen($incident['incident_description']) > 200 ? '...' : ''; ?>
+                                    </div>
+                                    <div class="incident-meta">
+                                        <span class="incident-meta-item">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <?php echo htmlspecialchars($incident['barangay_name'] ?? 'Unknown'); ?>, <?php echo htmlspecialchars($incident['district'] ?? ''); ?>
+                                        </span>
+                                        <span class="incident-meta-item">
+                                            <i class="fas fa-fingerprint"></i>
+                                            <?php echo htmlspecialchars($incident['incident_code']); ?>
+                                        </span>
+                                        <span class="incident-meta-item">
+                                            <i class="fas <?php echo getStatusIcon($incident['status']); ?>"></i>
+                                            <?php echo getStatusLabel($incident['status']); ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
 
-                    <!-- Additional Statistics Section -->
+                    <!-- District Performance Metrics -->
                     <div class="incidents-section">
                         <div class="section-header">
-                            <h2 class="section-title">District Performance Metrics</h2>
+                            <h2 class="section-title">Crime Distribution by District</h2>
                         </div>
 
-                        <div class="quick-stats-grid">
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">4.2 min</div>
-                                <div class="quick-stat-label">Avg Response Time</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">92%</div>
-                                <div class="quick-stat-label">Report Accuracy</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">156</div>
-                                <div class="quick-stat-label">Active Officers</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">28</div>
-                                <div class="quick-stat-label">Active Patrols</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">7,842</div>
-                                <div class="quick-stat-label">Citizens Assisted</div>
-                            </div>
-                            <div class="quick-stat-item">
-                                <div class="quick-stat-value">15</div>
-                                <div class="quick-stat-label">Ongoing Operations</div>
+                        <div class="quick-stats-grid" id="district-stats">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i> Loading district data...
                             </div>
                         </div>
                     </div>
@@ -430,8 +347,13 @@ require_once '../../api/middleware/auth.php';
     </div>
 
     <script>
+        // Current period state
+        let currentPeriod = 'week';
+
         // Time period tab functionality
         function showPeriod(period) {
+            currentPeriod = period;
+
             // Update active tab
             const tabs = document.querySelectorAll('.time-tab');
             tabs.forEach(tab => {
@@ -441,71 +363,109 @@ require_once '../../api/middleware/auth.php';
                 }
             });
 
-            // Update stats based on period (static data)
-            const statsData = {
-                today: {
-                    total: 47,
-                    thefts: 12,
-                    assaults: 8,
-                    vandalism: 5,
-                    burglaries: 11,
-                    other: 11
-                },
-                week: {
-                    total: 324,
-                    thefts: 89,
-                    assaults: 56,
-                    vandalism: 42,
-                    burglaries: 67,
-                    other: 70
-                },
-                month: {
-                    total: 1428,
-                    thefts: 387,
-                    assaults: 234,
-                    vandalism: 189,
-                    burglaries: 298,
-                    other: 320
-                },
-                year: {
-                    total: 12847,
-                    thefts: 3542,
-                    assaults: 2156,
-                    vandalism: 1876,
-                    burglaries: 2584,
-                    other: 2689
-                }
-            };
-
-            const data = statsData[period];
-            const statsGrid = document.getElementById('period-stats');
-            statsGrid.innerHTML = `
-                <div class="quick-stat-item">
-                    <div class="quick-stat-value">${data.total}</div>
-                    <div class="quick-stat-label">Total Incidents</div>
-                </div>
-                <div class="quick-stat-item">
-                    <div class="quick-stat-value">${data.thefts}</div>
-                    <div class="quick-stat-label">Thefts</div>
-                </div>
-                <div class="quick-stat-item">
-                    <div class="quick-stat-value">${data.assaults}</div>
-                    <div class="quick-stat-label">Assaults</div>
-                </div>
-                <div class="quick-stat-item">
-                    <div class="quick-stat-value">${data.vandalism}</div>
-                    <div class="quick-stat-label">Vandalism</div>
-                </div>
-                <div class="quick-stat-item">
-                    <div class="quick-stat-value">${data.burglaries}</div>
-                    <div class="quick-stat-label">Burglaries</div>
-                </div>
-                <div class="quick-stat-item">
-                    <div class="quick-stat-value">${data.other}</div>
-                    <div class="quick-stat-label">Other Crimes</div>
-                </div>
-            `;
+            // Fetch stats from API
+            loadPeriodStats(period);
         }
+
+        // Load statistics for selected period
+        async function loadPeriodStats(period) {
+            const statsGrid = document.getElementById('period-stats');
+            statsGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading statistics...</div>';
+
+            try {
+                const response = await fetch(`../../api/retrieve/crime-statistics.php?period=${period}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const stats = data.data;
+                    const categories = stats.by_category.slice(0, 6);
+
+                    let html = `
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-value">${stats.overview.total_crimes.toLocaleString()}</div>
+                            <div class="quick-stat-label">Total Incidents</div>
+                        </div>
+                    `;
+
+                    categories.forEach(cat => {
+                        html += `
+                            <div class="quick-stat-item">
+                                <div class="quick-stat-value">${parseInt(cat.count).toLocaleString()}</div>
+                                <div class="quick-stat-label">${cat.category_name || 'Other'}</div>
+                            </div>
+                        `;
+                    });
+
+                    statsGrid.innerHTML = html;
+                } else {
+                    statsGrid.innerHTML = '<div class="error-message">Failed to load statistics</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+                statsGrid.innerHTML = '<div class="error-message">Error loading statistics</div>';
+            }
+        }
+
+        // Load district statistics
+        async function loadDistrictStats() {
+            const districtGrid = document.getElementById('district-stats');
+
+            try {
+                const response = await fetch('../../api/retrieve/barangays.php?include_stats=true&period=month');
+                const data = await response.json();
+
+                if (data.success && data.district_summary) {
+                    let html = '';
+                    data.district_summary.forEach(district => {
+                        html += `
+                            <div class="quick-stat-item">
+                                <div class="quick-stat-value">${parseInt(district.total_incidents).toLocaleString()}</div>
+                                <div class="quick-stat-label">${district.district || 'Unknown'}</div>
+                            </div>
+                        `;
+                    });
+
+                    districtGrid.innerHTML = html || '<div class="no-data-message">No district data available</div>';
+                } else {
+                    districtGrid.innerHTML = '<div class="error-message">Failed to load district data</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching district stats:', error);
+                districtGrid.innerHTML = '<div class="error-message">Error loading district data</div>';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showPeriod('week');
+            loadDistrictStats();
+        });
     </script>
+
+    <style>
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary-1);
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner i {
+            margin-right: 0.5rem;
+        }
+
+        .error-message, .no-data-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary-1);
+            grid-column: 1 / -1;
+        }
+
+        .no-data-message i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+    </style>
 </body>
 </html>
