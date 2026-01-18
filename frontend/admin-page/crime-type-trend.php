@@ -1,6 +1,60 @@
 <?php
-// Authentication check - must be at the top of every admin page
 require_once '../../api/middleware/auth.php';
+require_once '../../api/config.php';
+
+// Get categories with counts
+$categoriesQuery = "
+    SELECT cc.id, cc.category_code, cc.category_name, cc.icon, cc.color, cc.severity_level,
+           COUNT(ci.id) as count
+    FROM crime_department_crime_categories cc
+    LEFT JOIN crime_department_crime_incidents ci ON cc.id = ci.crime_category_id
+    WHERE cc.is_active = 1
+    GROUP BY cc.id
+    ORDER BY count DESC
+";
+$categoriesResult = $mysqli->query($categoriesQuery);
+$categories = [];
+while ($row = $categoriesResult->fetch_assoc()) {
+    $categories[] = $row;
+}
+
+// Get total
+$totalQuery = "SELECT COUNT(*) as total FROM crime_department_crime_incidents";
+$totalResult = $mysqli->query($totalQuery);
+$totalIncidents = $totalResult->fetch_assoc()['total'];
+
+// Get top category
+$topCategory = !empty($categories) ? $categories[0] : ['category_name' => 'N/A', 'count' => 0];
+
+// Get source system distribution
+$sourceQuery = "
+    SELECT cc.source_system, COUNT(ci.id) as count
+    FROM crime_department_crime_categories cc
+    LEFT JOIN crime_department_crime_incidents ci ON cc.id = ci.crime_category_id
+    WHERE cc.is_active = 1
+    GROUP BY cc.source_system
+    ORDER BY count DESC
+";
+$sourceResult = $mysqli->query($sourceQuery);
+$sourceData = [];
+while ($row = $sourceResult->fetch_assoc()) {
+    $sourceData[] = $row;
+}
+
+// Get severity distribution
+$severityQuery = "
+    SELECT cc.severity_level, COUNT(ci.id) as count
+    FROM crime_department_crime_categories cc
+    LEFT JOIN crime_department_crime_incidents ci ON cc.id = ci.crime_category_id
+    WHERE cc.is_active = 1 AND cc.severity_level IS NOT NULL
+    GROUP BY cc.severity_level
+    ORDER BY FIELD(cc.severity_level, 'critical', 'high', 'medium', 'low')
+";
+$severityResult = $mysqli->query($severityQuery);
+$severityData = [];
+while ($row = $severityResult->fetch_assoc()) {
+    $severityData[] = $row;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +74,6 @@ require_once '../../api/middleware/auth.php';
 </head>
 <body>
     <?php include '../includes/sidebar.php' ?>
-
     <?php include '../includes/admin-header.php'; ?>
 
     <div class="main-content">
@@ -28,332 +81,114 @@ require_once '../../api/middleware/auth.php';
             <div class="title">
                 <nav class="breadcrumb" aria-label="Breadcrumb">
                     <ol class="breadcrumb-list">
-                        <li class="breadcrumb-item">
-                            <a href="/" class="breadcrumb-link">
-                                <span>Home</span>
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item">
-                            <a href="/analytics" class="breadcrumb-link">
-                                <span>Analytics</span>
-                            </a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            <span>Crime Type Trends</span>
-                        </li>
+                        <li class="breadcrumb-item"><a href="/" class="breadcrumb-link"><span>Home</span></a></li>
+                        <li class="breadcrumb-item"><a href="/analytics" class="breadcrumb-link"><span>Analytics</span></a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><span>Crime Type Trends</span></li>
                     </ol>
                 </nav>
                 <h1>Crime Type Trends</h1>
-                <p>Analyze trends for specific crime categories to identify patterns and emerging threats. Track increase or decrease indicators to determine which crime types require immediate attention and resources.</p>
+                <p>Analyze trends for specific crime categories to identify patterns and emerging threats.</p>
             </div>
 
             <div class="sub-container">
                 <div class="page-content">
-                    <!-- Overall Crime Type Distribution -->
-                    <div class="chart-grid-single">
-                        <div class="chart-card">
-                            <div class="chart-header">
-                                <h3 class="chart-title">Crime Type Distribution Overview</h3>
-                                <div class="chart-icon">
-                                    <i class="fas fa-chart-pie"></i>
+                    <!-- Stats Cards -->
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon primary"><i class="fas fa-tags"></i></div>
+                                <div class="stat-card-info">
+                                    <div class="stat-card-label">Total Categories</div>
+                                    <div class="stat-card-value"><?php echo count($categories); ?></div>
                                 </div>
-                            </div>
-                            <div class="chart-canvas-container medium">
-                                <canvas id="crimeTypeOverviewChart"></canvas>
-                            </div>
-                            <div class="chart-footer-text">
-                                Total of 16,605 crimes recorded this year across all categories
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Crime Type Trends Over Time -->
-                    <div class="chart-grid-single">
-                        <div class="chart-card">
-                            <div class="chart-header">
-                                <h3 class="chart-title">Crime Type Trends (6-Month Comparison)</h3>
-                                <div class="chart-icon">
-                                    <i class="fas fa-chart-line"></i>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon danger"><i class="fas fa-chart-bar"></i></div>
+                                <div class="stat-card-info">
+                                    <div class="stat-card-label">Total Incidents</div>
+                                    <div class="stat-card-value"><?php echo number_format($totalIncidents); ?></div>
                                 </div>
-                            </div>
-                            <div class="chart-canvas-container large">
-                                <canvas id="crimeTypeTrendChart"></canvas>
-                            </div>
-                            <div class="chart-footer-text">
-                                Multi-category trend analysis showing increase/decrease patterns over time
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Crime Type Change Indicators -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3 class="chart-title">Crime Type Change Indicators</h3>
-                            <div class="chart-icon">
-                                <i class="fas fa-arrows-alt-v"></i>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="stat-card-info">
+                                    <div class="stat-card-label">Top Crime Type</div>
+                                    <div class="stat-card-value" style="font-size: 0.9rem;"><?php echo htmlspecialchars($topCategory['category_name']); ?></div>
+                                </div>
                             </div>
+                            <div class="stat-card-footer"><span><?php echo $topCategory['count']; ?> incidents</span></div>
                         </div>
-                        <div class="crime-type-list">
-                            <div class="crime-type-card rising">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-hand-holding-usd"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Theft & Robbery</h4>
-                                        <p>Includes burglary, shoplifting, pickpocketing, and armed robbery</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">3,542</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">295</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-up">
-                                            <i class="fas fa-arrow-up"></i> +8.3%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="crime-type-card rising">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-door-open"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Burglary & Breaking & Entering</h4>
-                                        <p>Residential and commercial break-ins, property intrusion</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">2,584</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">215</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-up">
-                                            <i class="fas fa-arrow-up"></i> +6.7%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="crime-type-card declining">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-user-injured"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Assault & Battery</h4>
-                                        <p>Physical altercations, domestic violence, aggravated assault</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">2,156</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">180</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-down">
-                                            <i class="fas fa-arrow-down"></i> -3.7%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="crime-type-card rising">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-spray-can"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Vandalism & Property Damage</h4>
-                                        <p>Graffiti, destruction of property, malicious damage</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">1,876</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">156</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-up">
-                                            <i class="fas fa-arrow-up"></i> +11.2%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="crime-type-card rising">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-car"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Vehicle Crimes</h4>
-                                        <p>Auto theft, carjacking, vehicle break-ins</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">1,234</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">103</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-up">
-                                            <i class="fas fa-arrow-up"></i> +12.5%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="crime-type-card stable">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-pills"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Drug-Related Crimes</h4>
-                                        <p>Drug possession, trafficking, drug-related offenses</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">892</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">74</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-stable">
-                                            <i class="fas fa-minus"></i> +0.2%
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="crime-type-card declining">
-                                <div class="crime-type-header">
-                                    <div class="crime-type-icon">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </div>
-                                    <div class="crime-type-info">
-                                        <h4>Other Crimes</h4>
-                                        <p>Fraud, cybercrime, public disturbance, and miscellaneous offenses</p>
-                                    </div>
-                                </div>
-                                <div class="crime-type-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-label">Total Incidents</span>
-                                        <span class="stat-value">563</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Monthly Average</span>
-                                        <span class="stat-value">47</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-label">Trend</span>
-                                        <span class="stat-value trend-down">
-                                            <i class="fas fa-arrow-down"></i> -4.8%
-                                        </span>
-                                    </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon success"><i class="fas fa-network-wired"></i></div>
+                                <div class="stat-card-info">
+                                    <div class="stat-card-label">Source Systems</div>
+                                    <div class="stat-card-value"><?php echo count($sourceData); ?></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Most Frequent Crimes -->
+                    <!-- Charts Row -->
                     <div class="chart-grid-double">
                         <div class="chart-card">
                             <div class="chart-header">
-                                <h3 class="chart-title">Most Frequent Crime Types (This Month)</h3>
-                                <div class="chart-icon">
-                                    <i class="fas fa-sort-amount-down"></i>
-                                </div>
+                                <h3 class="chart-title">Crime Type Distribution</h3>
+                                <div class="chart-icon"><i class="fas fa-chart-pie"></i></div>
                             </div>
                             <div class="chart-canvas-container medium">
-                                <canvas id="frequentCrimesChart"></canvas>
-                            </div>
-                            <div class="chart-footer-text">
-                                Top 7 crime types by monthly incident count
+                                <canvas id="categoryChart"></canvas>
                             </div>
                         </div>
-
                         <div class="chart-card">
                             <div class="chart-header">
-                                <h3 class="chart-title">Emerging Crime Threats</h3>
-                                <div class="chart-icon">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
+                                <h3 class="chart-title">Severity Distribution</h3>
+                                <div class="chart-icon"><i class="fas fa-chart-bar"></i></div>
                             </div>
-                            <div class="emerging-threats">
-                                <div class="threat-item high">
-                                    <div class="threat-icon">
-                                        <i class="fas fa-arrow-up"></i>
+                            <div class="chart-canvas-container medium">
+                                <canvas id="severityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category List -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">All Crime Categories</h3>
+                            <div class="chart-icon"><i class="fas fa-list"></i></div>
+                        </div>
+                        <div class="crime-types-list">
+                            <?php foreach ($categories as $index => $cat): ?>
+                            <div class="crime-type-item">
+                                <div class="crime-rank rank-<?php echo min($index + 1, 3); ?>">
+                                    <?php echo $index + 1; ?>
+                                </div>
+                                <div class="crime-type-info">
+                                    <div class="crime-type-name">
+                                        <i class="fas <?php echo $cat['icon'] ?? 'fa-exclamation-circle'; ?>" style="color: <?php echo $cat['color'] ?? '#6b7280'; ?>; margin-right: 0.5rem;"></i>
+                                        <?php echo htmlspecialchars($cat['category_name']); ?>
                                     </div>
-                                    <div class="threat-content">
-                                        <h5>Vehicle Crimes</h5>
-                                        <p>12.5% increase - Requires immediate attention</p>
+                                    <div class="crime-type-description">
+                                        <span class="severity-badge severity-<?php echo $cat['severity_level'] ?? 'low'; ?>">
+                                            <?php echo ucfirst($cat['severity_level'] ?? 'N/A'); ?>
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="threat-item high">
-                                    <div class="threat-icon">
-                                        <i class="fas fa-arrow-up"></i>
-                                    </div>
-                                    <div class="threat-content">
-                                        <h5>Vandalism</h5>
-                                        <p>11.2% increase - Growing concern in public areas</p>
-                                    </div>
-                                </div>
-                                <div class="threat-item medium">
-                                    <div class="threat-icon">
-                                        <i class="fas fa-arrow-up"></i>
-                                    </div>
-                                    <div class="threat-content">
-                                        <h5>Theft & Robbery</h5>
-                                        <p>8.3% increase - Concentrated in commercial districts</p>
-                                    </div>
-                                </div>
-                                <div class="threat-item low">
-                                    <div class="threat-icon">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                    <div class="threat-content">
-                                        <h5>Assault Cases</h5>
-                                        <p>3.7% decrease - Positive trend, continue monitoring</p>
+                                <div class="crime-type-stats">
+                                    <div class="crime-count"><?php echo number_format($cat['count']); ?></div>
+                                    <div class="crime-percentage">
+                                        <?php echo $totalIncidents > 0 ? round(($cat['count'] / $totalIncidents) * 100, 1) : 0; ?>%
                                     </div>
                                 </div>
                             </div>
+                            <?php endforeach; ?>
+                            <?php if (empty($categories)): ?>
+                            <div class="no-data">No categories available</div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -363,290 +198,75 @@ require_once '../../api/middleware/auth.php';
     </div>
 
     <script>
-        let crimeTypeOverviewChart, crimeTypeTrendChart, frequentCrimesChart;
+        const categoryLabels = <?php echo json_encode(array_slice(array_column($categories, 'category_name'), 0, 8)); ?>;
+        const categoryValues = <?php echo json_encode(array_map('intval', array_slice(array_column($categories, 'count'), 0, 8))); ?>;
+        const categoryColors = <?php echo json_encode(array_slice(array_map(fn($c) => $c['color'] ?? '#6b7280', $categories), 0, 8)); ?>;
+        const severityLabels = <?php echo json_encode(array_column($severityData, 'severity_level')); ?>;
+        const severityValues = <?php echo json_encode(array_map('intval', array_column($severityData, 'count'))); ?>;
+
+        let categoryChart, severityChart;
 
         function getThemeColors() {
-            const getComputedColor = (variable) => {
-                const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-                return value || null;
-            };
-
+            const getColor = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || null;
             return {
-                primaryColor: getComputedColor('--primary-color-1') || '#4c8a89',
-                textColor: getComputedColor('--text-color-1') || '#171717',
-                textSecondary: getComputedColor('--text-secondary-1') || '#575757',
-                gridColor: getComputedColor('--border-color-1') || '#e5e5e5',
-                cardBg: getComputedColor('--card-bg-1') || '#ffffff',
-                errorColor: getComputedColor('--error-color') || '#dc2626',
-                successColor: getComputedColor('--success-color') || '#10b981',
-                warningColor: getComputedColor('--warning-color') || '#f59e0b'
+                textColor: getColor('--text-color-1') || '#171717',
+                gridColor: getColor('--border-color-1') || '#e5e5e5'
             };
-        }
-
-        function hexToRgba(hex, alpha) {
-            if (!hex) return `rgba(0,0,0,${alpha})`;
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
 
         function initializeCharts() {
             const colors = getThemeColors();
+            const severityColors = { critical: '#dc2626', high: '#f59e0b', medium: '#3b82f6', low: '#10b981' };
 
-            Chart.defaults.color = colors.textColor;
-            Chart.defaults.borderColor = colors.gridColor;
-            Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+            if (categoryChart) categoryChart.destroy();
+            if (severityChart) severityChart.destroy();
 
-            if (crimeTypeOverviewChart) crimeTypeOverviewChart.destroy();
-            if (crimeTypeTrendChart) crimeTypeTrendChart.destroy();
-            if (frequentCrimesChart) frequentCrimesChart.destroy();
-
-            // Crime Type Overview Pie Chart
-            const overviewCtx = document.getElementById('crimeTypeOverviewChart').getContext('2d');
-            crimeTypeOverviewChart = new Chart(overviewCtx, {
+            categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Theft & Robbery', 'Burglary', 'Assault', 'Vandalism', 'Vehicle Crimes', 'Drug-Related', 'Others'],
-                    datasets: [{
-                        data: [3542, 2584, 2156, 1876, 1234, 892, 563],
-                        backgroundColor: [
-                            colors.errorColor,
-                            colors.warningColor,
-                            '#8b5cf6',
-                            '#3b82f6',
-                            '#ec4899',
-                            colors.successColor,
-                            colors.textSecondary
-                        ],
-                        borderWidth: 2,
-                        borderColor: colors.cardBg,
-                        hoverOffset: 10
-                    }]
+                    labels: categoryLabels,
+                    datasets: [{ data: categoryValues, backgroundColor: categoryColors, borderWidth: 2, borderColor: '#fff' }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: colors.textColor,
-                                font: { size: 13 },
-                                padding: 15,
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    return data.labels.map((label, i) => {
-                                        const value = data.datasets[0].data[i];
-                                        const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        return {
-                                            text: `${label}: ${value.toLocaleString()} (${percentage}%)`,
-                                            fillStyle: data.datasets[0].backgroundColor[i],
-                                            fontColor: colors.textColor,
-                                            hidden: false,
-                                            index: i
-                                        };
-                                    });
-                                }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return `${label}: ${value.toLocaleString()} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: colors.textColor } } }
                 }
             });
 
-            // Crime Type Trend Line Chart
-            const trendCtx = document.getElementById('crimeTypeTrendChart').getContext('2d');
-            crimeTypeTrendChart = new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-                    datasets: [
-                        {
-                            label: 'Theft & Robbery',
-                            data: [542, 567, 589, 601, 623, 620],
-                            borderColor: colors.errorColor,
-                            backgroundColor: hexToRgba(colors.errorColor, 0.1),
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        },
-                        {
-                            label: 'Burglary',
-                            data: [398, 412, 425, 437, 445, 467],
-                            borderColor: colors.warningColor,
-                            backgroundColor: hexToRgba(colors.warningColor, 0.1),
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        },
-                        {
-                            label: 'Assault',
-                            data: [378, 371, 365, 358, 352, 332],
-                            borderColor: '#8b5cf6',
-                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        },
-                        {
-                            label: 'Vandalism',
-                            data: [289, 298, 312, 325, 337, 315],
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        },
-                        {
-                            label: 'Vehicle Crimes',
-                            data: [178, 189, 201, 212, 225, 229],
-                            borderColor: '#ec4899',
-                            backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        },
-                        {
-                            label: 'Drug-Related',
-                            data: [148, 149, 150, 149, 148, 148],
-                            borderColor: colors.successColor,
-                            backgroundColor: hexToRgba(colors.successColor, 0.1),
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        },
-                        {
-                            label: 'Others',
-                            data: [98, 95, 92, 89, 95, 94],
-                            borderColor: colors.textSecondary,
-                            backgroundColor: hexToRgba(colors.textSecondary, 0.1),
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                color: colors.textColor,
-                                font: { size: 13 },
-                                padding: 12,
-                                usePointStyle: true
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: colors.textColor, font: { size: 12 } },
-                            grid: { color: colors.gridColor }
-                        },
-                        x: {
-                            ticks: { color: colors.textColor, font: { size: 12 } },
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-
-            // Frequent Crimes Bar Chart
-            const frequentCtx = document.getElementById('frequentCrimesChart').getContext('2d');
-            frequentCrimesChart = new Chart(frequentCtx, {
+            severityChart = new Chart(document.getElementById('severityChart').getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: ['Theft', 'Burglary', 'Assault', 'Vandalism', 'Vehicle', 'Drug', 'Others'],
+                    labels: severityLabels.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
                     datasets: [{
-                        label: 'Monthly Incidents',
-                        data: [620, 467, 332, 315, 229, 148, 94],
-                        backgroundColor: [
-                            hexToRgba(colors.errorColor, 0.8),
-                            hexToRgba(colors.warningColor, 0.8),
-                            'rgba(139, 92, 246, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(236, 72, 153, 0.8)',
-                            hexToRgba(colors.successColor, 0.8),
-                            hexToRgba(colors.textSecondary, 0.8)
-                        ],
-                        borderColor: [
-                            colors.errorColor,
-                            colors.warningColor,
-                            '#8b5cf6',
-                            '#3b82f6',
-                            '#ec4899',
-                            colors.successColor,
-                            colors.textSecondary
-                        ],
-                        borderWidth: 2,
-                        borderRadius: 8,
-                        borderSkipped: false
+                        label: 'Incidents',
+                        data: severityValues,
+                        backgroundColor: severityLabels.map(s => severityColors[s] || '#6b7280'),
+                        borderRadius: 6
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            callbacks: { label: (context) => 'Incidents: ' + context.parsed.y }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: colors.textColor, font: { size: 12 } },
-                            grid: { color: colors.gridColor }
-                        },
-                        x: {
-                            ticks: { color: colors.textColor, font: { size: 12 } },
-                            grid: { display: false }
-                        }
+                        y: { beginAtZero: true, grid: { color: colors.gridColor } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeCharts();
-        });
-
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class' || mutation.attributeName === 'data-theme') {
-                    setTimeout(() => { initializeCharts(); }, 50);
-                }
-            });
-        });
-
+        document.addEventListener('DOMContentLoaded', initializeCharts);
+        const observer = new MutationObserver(() => setTimeout(initializeCharts, 50));
         observer.observe(document.documentElement, { attributes: true });
-        if (document.body) {
-            observer.observe(document.body, { attributes: true });
-        }
     </script>
+
+    <style>
+        .no-data { text-align: center; padding: 2rem; color: var(--text-secondary-1); }
+        .severity-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; text-transform: uppercase; }
+        .severity-badge.severity-critical { background: #fee2e2; color: #dc2626; }
+        .severity-badge.severity-high { background: #fef3c7; color: #d97706; }
+        .severity-badge.severity-medium { background: #dbeafe; color: #2563eb; }
+        .severity-badge.severity-low { background: #d1fae5; color: #059669; }
+    </style>
 </body>
 </html>
