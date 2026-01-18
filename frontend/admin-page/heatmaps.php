@@ -1,6 +1,23 @@
 <?php
 // Authentication check - must be at the top of every admin page
 require_once '../../api/middleware/auth.php';
+require_once '../../api/config.php';
+
+// Get crime categories for filter dropdown
+$categoriesQuery = "SELECT id, category_code, category_name, color, icon FROM crime_department_crime_categories WHERE is_active = 1 ORDER BY category_name";
+$categoriesResult = $mysqli->query($categoriesQuery);
+$categories = [];
+while ($row = $categoriesResult->fetch_assoc()) {
+    $categories[] = $row;
+}
+
+// Get barangays for filter
+$barangaysQuery = "SELECT id, barangay_name, district FROM crime_department_barangays WHERE is_active = 1 ORDER BY barangay_name";
+$barangaysResult = $mysqli->query($barangaysQuery);
+$barangays = [];
+while ($row = $barangaysResult->fetch_assoc()) {
+    $barangays[] = $row;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,8 +32,6 @@ require_once '../../api/middleware/auth.php';
     <link rel="stylesheet" href="../css/hero.css">
     <link rel="stylesheet" href="../css/sidebar-footer.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="../css/crime-mapping.css">
     <link rel="icon" type="image/x-icon" href="../image/favicon.ico">
     <style>
@@ -29,29 +44,37 @@ require_once '../../api/middleware/auth.php';
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin: 20px 0;
         }
-        
-        .custom-marker {
-            background: transparent;
-            border: none;
-        }
-        
-        .leaflet-control-layers {
-            border-radius: 8px !important;
-            overflow: hidden;
-        }
-        
-        .gradient-legend {
-            background: white;
-            padding: 10px 15px;
+        .heatmap-controls-panel {
+            background: var(--primary-bg-1);
+            padding: 1rem;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            font-size: 12px;
+            margin-bottom: 1rem;
+        }
+        .heatmap-slider-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .slider-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .slider-item label {
+            font-size: 0.875rem;
+            color: var(--text-secondary-1);
+        }
+        .slider-item input[type="range"] {
+            width: 100%;
+        }
+        .slider-value {
+            font-weight: 600;
+            color: var(--text-primary-1);
         }
     </style>
 </head>
 <body>
     <?php include '../includes/sidebar.php' ?>
-
     <?php include '../includes/admin-header.php'; ?>
 
     <div class="main-content">
@@ -60,165 +83,146 @@ require_once '../../api/middleware/auth.php';
                 <nav class="breadcrumb" aria-label="Breadcrumb">
                     <ol class="breadcrumb-list">
                         <li class="breadcrumb-item">
-                            <a href="/" class="breadcrumb-link">
-                                <span>Home</span>
-                            </a>
+                            <a href="/" class="breadcrumb-link"><span>Home</span></a>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="/analytics" class="breadcrumb-link">
-                                <span>Analytics</span>
-                            </a>
+                            <a href="/analytics" class="breadcrumb-link"><span>Analytics</span></a>
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
-                            <span>Crime Mapping</span>
+                            <span>Heatmaps</span>
                         </li>
                     </ol>
                 </nav>
-                <h1>Crime Mapping - Quezon City</h1>
-                <p>Interactive crime map showing reported incidents across Quezon City. Click on markers to view detailed information about each crime incident including type, date, time, barangay, and case status.</p>
+                <h1>Crime Heatmaps - Quezon City</h1>
+                <p>Visualize crime density and hotspots across Quezon City using interactive heatmaps. Adjust parameters to analyze crime concentration patterns.</p>
             </div>
-            
+
             <div class="sub-container">
                 <div class="page-content">
-                    <!-- Crime Statistics -->
+                    <!-- Statistics Cards -->
                     <div class="dashboard-grid">
-                        <!-- Total Crimes Card -->
                         <div class="stat-card">
                             <div class="stat-card-header">
                                 <div class="stat-card-icon primary">
-                                    <i class="fas fa-shield-alt"></i>
+                                    <i class="fas fa-fire"></i>
                                 </div>
                                 <div class="stat-card-info">
-                                    <div class="stat-card-label">Total Incidents</div>
-                                    <div class="stat-card-value" id="total-crimes">0</div>
+                                    <div class="stat-card-label">Hotspot Areas</div>
+                                    <div class="stat-card-value" id="hotspot-count">0</div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
-                                <span class="stat-trend up">
-                                    <i class="fas fa-arrow-up"></i> 5.2%
-                                </span>
-                                <span style="margin-left: 0.5rem;">vs last month</span>
+                                <span style="color: var(--text-secondary-1);">High density zones</span>
                             </div>
                         </div>
 
-                        <!-- Open Cases Card -->
                         <div class="stat-card">
                             <div class="stat-card-header">
                                 <div class="stat-card-icon danger">
-                                    <i class="fas fa-folder-open"></i>
+                                    <i class="fas fa-map-marker-alt"></i>
                                 </div>
                                 <div class="stat-card-info">
-                                    <div class="stat-card-label">Open Cases</div>
-                                    <div class="stat-card-value" id="open-cases">0</div>
+                                    <div class="stat-card-label">Total Incidents</div>
+                                    <div class="stat-card-value" id="total-incidents">0</div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
-                                <span style="color: var(--text-secondary-1);">
-                                    Active investigations
-                                </span>
+                                <span style="color: var(--text-secondary-1);">In selected period</span>
                             </div>
                         </div>
 
-                        <!-- Closed Cases Card -->
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <div class="stat-card-icon success">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="stat-card-info">
-                                    <div class="stat-card-label">Closed Cases</div>
-                                    <div class="stat-card-value" id="closed-cases">0</div>
-                                </div>
-                            </div>
-                            <div class="stat-card-footer">
-                                <span style="color: var(--success-color); font-weight:600;">65.3%</span>
-                                <span style="margin-left: 0.5rem;">resolution rate</span>
-                            </div>
-                        </div>
-
-                        <!-- Today's Crimes Card -->
                         <div class="stat-card">
                             <div class="stat-card-header">
                                 <div class="stat-card-icon warning">
-                                    <i class="fas fa-calendar-day"></i>
+                                    <i class="fas fa-exclamation-triangle"></i>
                                 </div>
                                 <div class="stat-card-info">
-                                    <div class="stat-card-label">Today's Crimes</div>
-                                    <div class="stat-card-value" id="today-crimes">0</div>
+                                    <div class="stat-card-label">Peak District</div>
+                                    <div class="stat-card-value" id="peak-district" style="font-size: 1.25rem;">-</div>
                                 </div>
                             </div>
                             <div class="stat-card-footer">
-                                <span class="stat-trend down">
-                                    <i class="fas fa-arrow-down"></i> 2.1%
-                                </span>
-                                <span style="margin-left: 0.5rem;">vs yesterday</span>
+                                <span style="color: var(--text-secondary-1);">Highest concentration</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon success">
+                                    <i class="fas fa-chart-area"></i>
+                                </div>
+                                <div class="stat-card-info">
+                                    <div class="stat-card-label">Coverage</div>
+                                    <div class="stat-card-value" id="coverage-barangays">0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card-footer">
+                                <span style="color: var(--text-secondary-1);">Barangays affected</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Map Controls -->
+                    <!-- Map Filters -->
                     <div class="map-controls">
                         <div class="map-controls-header">
                             <h3 class="map-controls-title">
                                 <i class="fas fa-filter"></i>
-                                Filter Crime Data
+                                Filter Heatmap Data
                             </h3>
                         </div>
                         <div class="filter-group">
                             <div class="filter-item">
-                                <label for="visualization-mode">
-                                    <i class="fas fa-map"></i>
-                                    Visualization Mode
-                                </label>
-                                <select id="visualization-mode">
-                                    <option value="heatmap">Heatmap</option>
-                                    <option value="cluster">Clustered Markers</option>
-                                    <option value="markers">Individual Markers</option>
+                                <label for="period-filter"><i class="fas fa-clock"></i> Time Period</label>
+                                <select id="period-filter">
+                                    <option value="week">Last 7 Days</option>
+                                    <option value="month" selected>Last 30 Days</option>
+                                    <option value="year">Last Year</option>
+                                    <option value="all">All Time</option>
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <label for="crime-type-filter">
-                                    <i class="fas fa-tag"></i>
-                                    Crime Type
-                                </label>
+                                <label for="crime-type-filter"><i class="fas fa-tag"></i> Crime Type</label>
                                 <select id="crime-type-filter">
                                     <option value="all">All Types</option>
-                                    <option value="theft">Theft</option>
-                                    <option value="robbery">Robbery</option>
-                                    <option value="assault">Assault</option>
-                                    <option value="burglary">Burglary</option>
-                                    <option value="drug">Drug-Related</option>
-                                    <option value="vandalism">Vandalism</option>
-                                    <option value="fraud">Fraud</option>
-                                    <option value="other">Other</option>
+                                    <?php foreach ($categories as $cat): ?>
+                                        <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <label for="status-filter">
-                                    <i class="fas fa-info-circle"></i>
-                                    Case Status
-                                </label>
-                                <select id="status-filter">
-                                    <option value="all">All Status</option>
-                                    <option value="open">Open</option>
-                                    <option value="closed">Closed</option>
+                                <label for="barangay-filter"><i class="fas fa-map-marker-alt"></i> Barangay</label>
+                                <select id="barangay-filter">
+                                    <option value="all">All Barangays</option>
+                                    <?php foreach ($barangays as $brgy): ?>
+                                        <option value="<?php echo $brgy['id']; ?>"><?php echo htmlspecialchars($brgy['barangay_name']); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
-                            </div>
-                            <div class="filter-item">
-                                <label for="date-from">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    Date From
-                                </label>
-                                <input type="date" id="date-from">
-                            </div>
-                            <div class="filter-item">
-                                <label for="date-to">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    Date To
-                                </label>
-                                <input type="date" id="date-to">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Heatmap Controls -->
+                    <div class="heatmap-controls-panel">
+                        <h4 style="margin-bottom: 1rem; color: var(--text-primary-1);"><i class="fas fa-sliders-h"></i> Heatmap Settings</h4>
+                        <div class="heatmap-slider-group">
+                            <div class="slider-item">
+                                <label>Radius: <span class="slider-value" id="radius-value">25</span>px</label>
+                                <input type="range" id="heat-radius" min="10" max="50" value="25">
+                            </div>
+                            <div class="slider-item">
+                                <label>Blur: <span class="slider-value" id="blur-value">15</span>px</label>
+                                <input type="range" id="heat-blur" min="5" max="30" value="15">
+                            </div>
+                            <div class="slider-item">
+                                <label>Intensity: <span class="slider-value" id="intensity-value">1.0</span></label>
+                                <input type="range" id="heat-intensity" min="0.1" max="2" step="0.1" value="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="map-loading" class="map-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading heatmap data...
                     </div>
 
                     <!-- Interactive Map -->
@@ -227,44 +231,23 @@ require_once '../../api/middleware/auth.php';
                     <!-- Legend -->
                     <div class="legend">
                         <div class="legend-header">
-                            <h3>
-                                <i class="fas fa-map-marked-alt"></i>
-                                Crime Type Legend
-                            </h3>
+                            <h3><i class="fas fa-fire"></i> Crime Density Legend</h3>
                         </div>
-                        <div class="legend-grid">
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #ef4444;"></div>
-                                <span class="legend-label">Theft</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #dc2626;"></div>
-                                <span class="legend-label">Robbery</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #f59e0b;"></div>
-                                <span class="legend-label">Assault</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #8b5cf6;"></div>
-                                <span class="legend-label">Burglary</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #3b82f6;"></div>
-                                <span class="legend-label">Drug-Related</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #10b981;"></div>
-                                <span class="legend-label">Vandalism</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #f97316;"></div>
-                                <span class="legend-label">Fraud</span>
-                            </div>
-                            <div class="legend-item">
-                                <div class="legend-color" style="background-color: #6b7280;"></div>
-                                <span class="legend-label">Other</span>
-                            </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem;">
+                            <span style="color: var(--text-secondary-1);">Low</span>
+                            <div style="flex: 1; height: 20px; background: linear-gradient(to right, #22c55e, #84cc16, #eab308, #f97316, #dc2626); border-radius: 4px;"></div>
+                            <span style="color: var(--text-secondary-1);">High</span>
+                        </div>
+                    </div>
+
+                    <!-- Top Hotspots Table -->
+                    <div class="chart-card" style="margin-top: 1.5rem;">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Top Crime Hotspots</h3>
+                            <div class="chart-icon"><i class="fas fa-list-ol"></i></div>
+                        </div>
+                        <div id="hotspots-table" class="barangay-list">
+                            <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Loading hotspots...</div>
                         </div>
                     </div>
                 </div>
@@ -274,595 +257,223 @@ require_once '../../api/middleware/auth.php';
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-
     <script>
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing map...');
+        // Quezon City boundary
+        const quezonCityPolygon = [
+            [14.7650, 121.0000], [14.7600, 121.0100], [14.7550, 121.0200],
+            [14.7500, 121.0300], [14.7450, 121.0400], [14.7400, 121.0500],
+            [14.7300, 121.0600], [14.7200, 121.0700], [14.7100, 121.0800],
+            [14.7000, 121.0900], [14.6900, 121.1000], [14.6700, 121.1050],
+            [14.6500, 121.1000], [14.6300, 121.0900], [14.6100, 121.0800],
+            [14.5950, 121.0700], [14.5900, 121.0600], [14.5850, 121.0500],
+            [14.5900, 121.0400], [14.5950, 121.0300], [14.6000, 121.0200],
+            [14.6050, 121.0100], [14.6100, 121.0000], [14.6150, 120.9950],
+            [14.6300, 120.9900], [14.6500, 120.9850], [14.6700, 120.9900],
+            [14.6900, 120.9950], [14.7100, 121.0000], [14.7300, 120.9950],
+            [14.7500, 120.9900], [14.7650, 121.0000]
+        ];
 
-            // Initialize map centered on Quezon City
-            const mapContainer = document.getElementById('crime-map');
-            if (!mapContainer) {
-                console.error('Map container not found!');
+        const strictBounds = L.latLngBounds([14.5800, 120.9800], [14.7700, 121.1100]);
+
+        // Initialize map
+        const map = L.map('crime-map', {
+            center: [14.6760, 121.0437],
+            zoom: 12,
+            minZoom: 11,
+            maxZoom: 18,
+            maxBounds: strictBounds,
+            maxBoundsViscosity: 1.0
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Mask outside QC
+        const outerBounds = [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]];
+        L.polygon([outerBounds, quezonCityPolygon], {
+            color: 'transparent',
+            fillColor: '#111827',
+            fillOpacity: 0.85,
+            interactive: false
+        }).addTo(map);
+
+        // QC boundary
+        L.polygon(quezonCityPolygon, {
+            color: '#4c8a89',
+            weight: 4,
+            opacity: 1,
+            fillColor: 'transparent',
+            fillOpacity: 0
+        }).addTo(map);
+
+        let heatLayer = null;
+        let crimeData = [];
+
+        // Load heatmap data
+        async function loadHeatmapData() {
+            const period = document.getElementById('period-filter').value;
+            const category = document.getElementById('crime-type-filter').value;
+            const barangay = document.getElementById('barangay-filter').value;
+
+            document.getElementById('map-loading').style.display = 'flex';
+
+            try {
+                let url = `../../api/retrieve/crime-mapping.php?period=${period}&limit=500`;
+                if (category !== 'all') url += `&category_id=${category}`;
+                if (barangay !== 'all') url += `&barangay_id=${barangay}`;
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.success) {
+                    crimeData = result.data.incidents || [];
+                    updateHeatmap();
+                    updateStats(result.data);
+                    updateHotspotsTable(result.data.clusters || []);
+                }
+            } catch (error) {
+                console.error('Error loading heatmap:', error);
+            } finally {
+                document.getElementById('map-loading').style.display = 'none';
+            }
+        }
+
+        // Update heatmap layer
+        function updateHeatmap() {
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+            }
+
+            if (crimeData.length === 0) return;
+
+            const radius = parseInt(document.getElementById('heat-radius').value);
+            const blur = parseInt(document.getElementById('heat-blur').value);
+            const intensity = parseFloat(document.getElementById('heat-intensity').value);
+
+            const heatPoints = crimeData.map(crime => {
+                let weight = 0.5;
+                if (crime.severity === 'critical') weight = 1.0;
+                else if (crime.severity === 'high') weight = 0.8;
+                else if (crime.severity === 'medium') weight = 0.6;
+                return [crime.lat, crime.lng, weight * intensity];
+            });
+
+            heatLayer = L.heatLayer(heatPoints, {
+                radius: radius,
+                blur: blur,
+                maxZoom: 15,
+                gradient: {
+                    0.0: '#22c55e',
+                    0.3: '#84cc16',
+                    0.5: '#eab308',
+                    0.7: '#f97316',
+                    0.85: '#ef4444',
+                    1.0: '#dc2626'
+                }
+            }).addTo(map);
+        }
+
+        // Update statistics
+        function updateStats(data) {
+            const incidents = data.incidents || [];
+            const clusters = data.clusters || [];
+
+            document.getElementById('total-incidents').textContent = incidents.length.toLocaleString();
+
+            // Count hotspots (barangays with > 3 incidents)
+            const hotspots = clusters.filter(c => c.count > 3).length;
+            document.getElementById('hotspot-count').textContent = hotspots;
+
+            // Find peak district
+            const districtCounts = {};
+            incidents.forEach(inc => {
+                if (inc.district) {
+                    districtCounts[inc.district] = (districtCounts[inc.district] || 0) + 1;
+                }
+            });
+            const peakDistrict = Object.entries(districtCounts).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('peak-district').textContent = peakDistrict ? peakDistrict[0] : '-';
+
+            // Count affected barangays
+            const affectedBarangays = new Set(incidents.map(i => i.barangay)).size;
+            document.getElementById('coverage-barangays').textContent = affectedBarangays;
+        }
+
+        // Update hotspots table
+        function updateHotspotsTable(clusters) {
+            const container = document.getElementById('hotspots-table');
+            const sortedClusters = clusters.sort((a, b) => b.count - a.count).slice(0, 10);
+
+            if (sortedClusters.length === 0) {
+                container.innerHTML = '<div class="no-data">No hotspot data available</div>';
                 return;
             }
 
-            // Quezon City boundary polygon (accurate outline)
-            const quezonCityPolygon = [
-                // Northern boundary (Novaliches/Caloocan border)
-                [14.7650, 121.0000],
-                [14.7600, 121.0100],
-                [14.7550, 121.0200],
-                [14.7500, 121.0300],
-                [14.7450, 121.0400],
-                [14.7400, 121.0500],
-                // Northeast (towards Marikina/San Mateo)
-                [14.7300, 121.0600],
-                [14.7200, 121.0700],
-                [14.7100, 121.0800],
-                [14.7000, 121.0900],
-                [14.6900, 121.1000],
-                // East boundary (Marikina border)
-                [14.6700, 121.1050],
-                [14.6500, 121.1000],
-                [14.6300, 121.0900],
-                // Southeast (towards Pasig/Mandaluyong)
-                [14.6100, 121.0800],
-                [14.5950, 121.0700],
-                [14.5900, 121.0600],
-                // South boundary (Mandaluyong/San Juan border)
-                [14.5850, 121.0500],
-                [14.5900, 121.0400],
-                [14.5950, 121.0300],
-                [14.6000, 121.0200],
-                // Southwest (towards Manila)
-                [14.6050, 121.0100],
-                [14.6100, 121.0000],
-                [14.6150, 120.9950],
-                // West boundary (Caloocan border)
-                [14.6300, 120.9900],
-                [14.6500, 120.9850],
-                [14.6700, 120.9900],
-                [14.6900, 120.9950],
-                [14.7100, 121.0000],
-                [14.7300, 120.9950],
-                [14.7500, 120.9900],
-                // Back to start
-                [14.7650, 121.0000]
-            ];
-
-            // Calculate bounds from QC polygon
-            const quezonCityBounds = L.latLngBounds(quezonCityPolygon);
-
-            // Strict bounds for Quezon City only
-            const strictBounds = L.latLngBounds(
-                [14.5800, 120.9800], // Southwest
-                [14.7700, 121.1100]  // Northeast
-            );
-
-            // Initialize map with restrictions
-            const map = L.map('crime-map', {
-                center: [14.6500, 121.0400],
-                zoom: 13,
-                minZoom: 12,
-                maxZoom: 18,
-                maxBounds: strictBounds,
-                maxBoundsViscosity: 1.0
-            });
-
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 18
-            }).addTo(map);
-
-            // Create outer bounds for the mask (covers the world)
-            const outerBounds = [
-                [-90, -180],
-                [-90, 180],
-                [90, 180],
-                [90, -180],
-                [-90, -180]
-            ];
-
-            // Create mask layer to gray out/disable areas outside QC
-            const maskLayer = L.polygon([outerBounds, quezonCityPolygon], {
-                color: 'transparent',
-                fillColor: '#111827',
-                fillOpacity: 0.85,
-                interactive: false
-            }).addTo(map);
-
-            // Add Quezon City boundary overlay
-            L.polygon(quezonCityPolygon, {
-                color: '#4c8a89',
-                weight: 4,
-                opacity: 1,
-                fillColor: 'transparent',
-                fillOpacity: 0
-            }).addTo(map).bindPopup('<strong>Quezon City</strong><br>Crime Data Analytics Coverage Area');
-
-            // Function to auto-zoom map to fit crime markers
-            function fitMapToCrimes(crimesArray) {
-                if (crimesArray.length === 0) {
-                    map.fitBounds(quezonCityBounds, { padding: [50, 50] });
-                    return;
-                }
-                const crimePoints = crimesArray.map(crime => [crime.lat, crime.lng]);
-                const crimeBounds = L.latLngBounds(crimePoints);
-                map.fitBounds(crimeBounds, { padding: [50, 50], maxZoom: 15 });
-            }
-
-            // Crime type colors
-            const crimeColors = {
-                'theft': '#ef4444',
-                'robbery': '#dc2626',
-                'assault': '#f59e0b',
-                'burglary': '#8b5cf6',
-                'drug': '#3b82f6',
-                'vandalism': '#10b981',
-                'fraud': '#f97316',
-                'other': '#6b7280'
-            };
-
-            // Sample crime data
-            let crimeData = [
-                { id: 1, type: 'theft', lat: 14.6760, lng: 121.0437, date: '2025-12-13', time: '14:30', barangay: 'Commonwealth', status: 'open', description: 'Mobile phone theft reported' },
-                { id: 2, type: 'robbery', lat: 14.6500, lng: 121.0500, date: '2025-12-12', time: '22:15', barangay: 'Cubao', status: 'closed', description: 'Armed robbery at convenience store' },
-                { id: 3, type: 'assault', lat: 14.7000, lng: 121.0300, date: '2025-12-14', time: '01:20', barangay: 'Fairview', status: 'open', description: 'Physical assault incident' },
-                { id: 4, type: 'burglary', lat: 14.6300, lng: 121.0600, date: '2025-12-11', time: '03:45', barangay: 'Kamias', status: 'closed', description: 'Residential burglary' },
-                { id: 5, type: 'drug', lat: 14.6900, lng: 121.0250, date: '2025-12-13', time: '18:00', barangay: 'Novaliches', status: 'open', description: 'Drug-related arrest' },
-                { id: 6, type: 'theft', lat: 14.6770, lng: 121.0447, date: '2025-12-13', time: '16:45', barangay: 'Commonwealth', status: 'open', description: 'Bag snatching incident' },
-                { id: 7, type: 'vandalism', lat: 14.6510, lng: 121.0510, date: '2025-12-12', time: '20:30', barangay: 'Cubao', status: 'closed', description: 'Graffiti on public property' },
-                { id: 8, type: 'fraud', lat: 14.7010, lng: 121.0310, date: '2025-12-14', time: '11:00', barangay: 'Fairview', status: 'open', description: 'Credit card fraud reported' },
-                { id: 9, type: 'assault', lat: 14.6310, lng: 121.0610, date: '2025-12-11', time: '23:20', barangay: 'Kamias', status: 'closed', description: 'Bar fight incident' },
-                { id: 10, type: 'burglary', lat: 14.6910, lng: 121.0260, date: '2025-12-13', time: '02:15', barangay: 'Novaliches', status: 'open', description: 'Business break-in' },
-                { id: 11, type: 'theft', lat: 14.6800, lng: 121.0400, date: '2025-12-14', time: '09:15', barangay: 'Batasan Hills', status: 'open', description: 'Car break-in' },
-                { id: 12, type: 'robbery', lat: 14.6400, lng: 121.0550, date: '2025-12-13', time: '19:30', barangay: 'Project 4', status: 'open', description: 'Street robbery' },
-                { id: 13, type: 'drug', lat: 14.6850, lng: 121.0350, date: '2025-12-12', time: '15:45', barangay: 'Holy Spirit', status: 'closed', description: 'Drug possession arrest' },
-                { id: 14, type: 'assault', lat: 14.6350, lng: 121.0650, date: '2025-12-14', time: '22:00', barangay: 'Kamuning', status: 'open', description: 'Domestic violence' },
-                { id: 15, type: 'theft', lat: 14.6720, lng: 121.0380, date: '2025-12-13', time: '13:20', barangay: 'Payatas', status: 'closed', description: 'Bicycle theft' }
-            ];
-
-            let markers = [];
-            let heatmapLayer = null;
-            let clusterLayer = null;
-            let currentMode = 'heatmap';
-            let currentLegend = null;
-
-            // Get crime icon
-            function getCrimeIcon(type) {
-                const icons = {
-                    'theft': 'fa-shopping-bag',
-                    'robbery': 'fa-user-secret',
-                    'assault': 'fa-hand-fist',
-                    'burglary': 'fa-house-damage',
-                    'drug': 'fa-pills',
-                    'vandalism': 'fa-spray-can',
-                    'fraud': 'fa-file-invoice-dollar',
-                    'other': 'fa-exclamation-triangle'
-                };
-                return icons[type] || 'fa-exclamation-triangle';
-            }
-
-            // Create custom marker icon
-            function createCustomIcon(crime) {
-                const color = crimeColors[crime.type] || crimeColors['other'];
-                
-                return L.divIcon({
-                    className: 'custom-marker',
-                    html: `
-                        <div style="
-                            background: ${color};
-                            border: 3px solid white;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                            width: 28px;
-                            height: 28px;
-                            border-radius: 50%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: white;
-                            font-size: 12px;
-                            font-weight: bold;
-                        ">
-                            <i class="fas ${getCrimeIcon(crime.type)}"></i>
-                        </div>
-                    `,
-                    iconSize: [28, 28],
-                    iconAnchor: [14, 14],
-                    popupAnchor: [0, -14]
-                });
-            }
-
-            // Create popup content
-            function createPopupContent(crime) {
-                const color = crimeColors[crime.type] || crimeColors['other'];
-                return `
-                    <div style="min-width: 250px; font-family: sans-serif;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                            <div style="
-                                width: 12px;
-                                height: 12px;
-                                background: ${color};
-                                border-radius: 50%;
-                            "></div>
-                            <h4 style="margin: 0; font-size: 16px; color: #333;">
-                                ${crime.type.charAt(0).toUpperCase() + crime.type.slice(1)}
-                            </h4>
-                        </div>
-                        <div style="display: grid; gap: 8px; font-size: 14px;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #666;">
-                                    <i class="fas fa-calendar"></i> Date:
-                                </span>
-                                <span style="font-weight: 500; color: #333;">${crime.date}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #666;">
-                                    <i class="fas fa-clock"></i> Time:
-                                </span>
-                                <span style="font-weight: 500; color: #333;">${crime.time}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #666;">
-                                    <i class="fas fa-map-marker-alt"></i> Barangay:
-                                </span>
-                                <span style="font-weight: 500; color: #333;">${crime.barangay}</span>
-                            </div>
-                            <div style="height: 1px; background: #eee; margin: 8px 0;"></div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="color: #666;">
-                                    <i class="fas fa-info-circle"></i> Status:
-                                </span>
-                                <span style="
-                                    padding: 4px 12px;
-                                    border-radius: 20px;
-                                    font-size: 12px;
-                                    font-weight: 600;
-                                    background: ${crime.status === 'open' ? '#fef3c7' : '#d1fae5'};
-                                    color: ${crime.status === 'open' ? '#92400e' : '#065f46'};
-                                ">
-                                    ${crime.status.toUpperCase()}
-                                </span>
-                            </div>
-                            <div style="margin-top: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-                                <span style="color: #666; font-size: 13px;">
-                                    <i class="fas fa-file-alt"></i> ${crime.description}
-                                </span>
-                            </div>
+            container.innerHTML = sortedClusters.map((cluster, index) => `
+                <div class="barangay-item" onclick="map.setView([${cluster.lat}, ${cluster.lng}], 15)" style="cursor: pointer;">
+                    <div class="barangay-position">${index + 1}</div>
+                    <div class="barangay-details">
+                        <div class="barangay-name">${cluster.barangay_name}</div>
+                        <div class="barangay-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Click to zoom
                         </div>
                     </div>
-                `;
-            }
+                    <div class="barangay-count">${cluster.count}</div>
+                </div>
+            `).join('');
+        }
 
-            // Create heatmap layer
-            function createHeatmap(data) {
-                if (heatmapLayer) {
-                    map.removeLayer(heatmapLayer);
-                    heatmapLayer = null;
-                }
-
-                if (data.length === 0) {
-                    console.log('No data for heatmap');
-                    return;
-                }
-
-                const points = data.map(crime => [crime.lat, crime.lng, 1]);
-
-                heatmapLayer = L.heatLayer(points, {
-                    radius: 30,
-                    blur: 20,
-                    maxZoom: 17,
-                    minOpacity: 0.4,
-                    gradient: {
-                        0.0: '#22c55e',
-                        0.25: '#84cc16',
-                        0.5: '#eab308',
-                        0.75: '#f97316',
-                        1.0: '#dc2626'
-                    }
-                }).addTo(map);
-
-                // Add gradient legend
-                addGradientLegend();
-            }
-
-            // Create cluster layer
-            function createClusterLayer(data) {
-                if (clusterLayer) {
-                    map.removeLayer(clusterLayer);
-                    clusterLayer = null;
-                }
-
-                if (data.length === 0) {
-                    console.log('No data for cluster');
-                    return;
-                }
-
-                const markerClusterGroup = L.markerClusterGroup({
-                    chunkedLoading: true,
-                    spiderfyOnMaxZoom: true,
-                    showCoverageOnHover: false,
-                    zoomToBoundsOnClick: true,
-                    maxClusterRadius: 40,
-                    iconCreateFunction: function (cluster) {
-                        const count = cluster.getChildCount();
-                        let color, size;
-                        
-                        if (count > 50) {
-                            color = '#dc2626';
-                            size = 50;
-                        } else if (count > 20) {
-                            color = '#f59e0b';
-                            size = 45;
-                        } else if (count > 10) {
-                            color = '#3b82f6';
-                            size = 40;
-                        } else {
-                            color = '#10b981';
-                            size = 35;
-                        }
-                        
-                        return L.divIcon({
-                            html: `
-                                <div style="
-                                    background: ${color};
-                                    color: white;
-                                    width: ${size}px;
-                                    height: ${size}px;
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    font-weight: bold;
-                                    font-size: 14px;
-                                    border: 3px solid white;
-                                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                                ">
-                                    ${count}
-                                </div>
-                            `,
-                            className: 'cluster-marker',
-                            iconSize: [size, size]
-                        });
-                    }
-                });
-
-                data.forEach(crime => {
-                    const icon = createCustomIcon(crime);
-                    const marker = L.marker([crime.lat, crime.lng], { icon: icon })
-                        .bindPopup(createPopupContent(crime));
-                    markerClusterGroup.addLayer(marker);
-                });
-
-                clusterLayer = markerClusterGroup;
-                map.addLayer(clusterLayer);
-            }
-
-            // Create individual markers
-            function createIndividualMarkers(data) {
-                clearMarkers();
-                
-                data.forEach(crime => {
-                    const icon = createCustomIcon(crime);
-                    const marker = L.marker([crime.lat, crime.lng], { icon: icon })
-                        .bindPopup(createPopupContent(crime))
-                        .addTo(map);
-                    markers.push({ marker, data: crime });
-                });
-            }
-
-            // Clear all markers
-            function clearMarkers() {
-                markers.forEach(({ marker }) => map.removeLayer(marker));
-                markers = [];
-            }
-
-            // Add gradient legend
-            function addGradientLegend() {
-                if (currentLegend) {
-                    map.removeControl(currentLegend);
-                    currentLegend = null;
-                }
-
-                const legend = L.control({ position: 'bottomright' });
-
-                legend.onAdd = function() {
-                    const div = L.DomUtil.create('div', 'gradient-legend');
-                    div.innerHTML = `
-                        <div style="
-                            background: white;
-                            padding: 10px 15px;
-                            border-radius: 8px;
-                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                            font-size: 12px;
-                            font-family: sans-serif;
-                        ">
-                            <div style="margin-bottom: 5px; font-weight: 600; color: #333;">Crime Density</div>
-                            <div style="
-                                width: 150px;
-                                height: 12px;
-                                background: linear-gradient(to right,
-                                    #22c55e,
-                                    #84cc16,
-                                    #eab308,
-                                    #f97316,
-                                    #dc2626
-                                );
-                                margin: 5px 0;
-                                border-radius: 2px;
-                            "></div>
-                            <div style="display: flex; justify-content: space-between; color: #666;">
-                                <span>Low</span>
-                                <span>High</span>
-                            </div>
-                        </div>
-                    `;
-                    return div;
-                };
-
-                legend.addTo(map);
-                currentLegend = legend;
-            }
-
-            // Update visualization
-            function updateVisualization() {
-                const filteredData = getFilteredCrimes();
-                currentMode = document.getElementById('visualization-mode').value;
-
-                // Remove existing layers
-                if (heatmapLayer) map.removeLayer(heatmapLayer);
-                if (clusterLayer) map.removeLayer(clusterLayer);
-                clearMarkers();
-
-                if (currentLegend) {
-                    map.removeControl(currentLegend);
-                    currentLegend = null;
-                }
-
-                // Apply new visualization
-                switch(currentMode) {
-                    case 'heatmap':
-                        createHeatmap(filteredData);
-                        break;
-                    case 'cluster':
-                        createClusterLayer(filteredData);
-                        break;
-                    case 'markers':
-                        createIndividualMarkers(filteredData);
-                        break;
-                }
-
-                updateStats();
-
-                // Auto-zoom to fit filtered crime markers
-                fitMapToCrimes(filteredData);
-            }
-
-            // Get filtered crimes
-            function getFilteredCrimes() {
-                const typeFilter = document.getElementById('crime-type-filter').value;
-                const statusFilter = document.getElementById('status-filter').value;
-                const dateFrom = document.getElementById('date-from').value;
-                const dateTo = document.getElementById('date-to').value;
-
-                return crimeData.filter(crime => {
-                    if (typeFilter !== 'all' && crime.type !== typeFilter) return false;
-                    if (statusFilter !== 'all' && crime.status !== statusFilter) return false;
-                    if (dateFrom && crime.date < dateFrom) return false;
-                    if (dateTo && crime.date > dateTo) return false;
-                    return true;
-                });
-            }
-
-            // Update statistics
-            function updateStats() {
-                const filtered = getFilteredCrimes();
-                const today = new Date().toISOString().split('T')[0];
-
-                document.getElementById('total-crimes').textContent = filtered.length;
-                document.getElementById('open-cases').textContent = filtered.filter(c => c.status === 'open').length;
-                document.getElementById('closed-cases').textContent = filtered.filter(c => c.status === 'closed').length;
-                document.getElementById('today-crimes').textContent = filtered.filter(c => c.date === today).length;
-            }
-
-            // Initialize with heatmap
-            updateVisualization();
-
-            // Event listeners
-            document.getElementById('visualization-mode').addEventListener('change', updateVisualization);
-            document.getElementById('crime-type-filter').addEventListener('change', updateVisualization);
-            document.getElementById('status-filter').addEventListener('change', updateVisualization);
-            document.getElementById('date-from').addEventListener('change', updateVisualization);
-            document.getElementById('date-to').addEventListener('change', updateVisualization);
-
-            // Add heatmap controls
-            function addHeatmapControls() {
-                const heatControl = L.control({ position: 'topright' });
-                
-                heatControl.onAdd = function() {
-                    const div = L.DomUtil.create('div', 'heatmap-controls');
-                    div.innerHTML = `
-                        <div style="
-                            background: white;
-                            padding: 15px;
-                            border-radius: 8px;
-                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                            width: 250px;
-                            font-family: sans-serif;
-                        ">
-                            <div style="font-weight: 600; margin-bottom: 10px; color: #333; font-size: 14px;">
-                                <i class="fas fa-sliders-h"></i> Heatmap Controls
-                            </div>
-                            <div style="margin-bottom: 10px;">
-                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">
-                                    Radius: <span id="radius-value">25</span>px
-                                </label>
-                                <input type="range" id="heat-radius" min="10" max="50" value="25" 
-                                       style="width: 100%; margin: 5px 0;">
-                            </div>
-                            <div style="margin-bottom: 10px;">
-                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">
-                                    Blur: <span id="blur-value">15</span>px
-                                </label>
-                                <input type="range" id="heat-blur" min="5" max="30" value="15" 
-                                       style="width: 100%; margin: 5px 0;">
-                            </div>
-                            <div>
-                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">
-                                    Intensity: <span id="intensity-value">1.0</span>
-                                </label>
-                                <input type="range" id="heat-intensity" min="0.1" max="2" step="0.1" value="1" 
-                                       style="width: 100%; margin: 5px 0;">
-                            </div>
-                        </div>
-                    `;
-                    return div;
-                };
-                
-                heatControl.addTo(map);
-                
-                // Event listeners for heatmap controls
-                document.getElementById('heat-radius')?.addEventListener('input', function(e) {
-                    document.getElementById('radius-value').textContent = e.target.value;
-                    updateHeatmapConfig();
-                });
-                
-                document.getElementById('heat-blur')?.addEventListener('input', function(e) {
-                    document.getElementById('blur-value').textContent = e.target.value;
-                    updateHeatmapConfig();
-                });
-                
-                document.getElementById('heat-intensity')?.addEventListener('input', function(e) {
-                    document.getElementById('intensity-value').textContent = e.target.value;
-                    updateHeatmapConfig();
-                });
-            }
-
-            // Update heatmap configuration
-            function updateHeatmapConfig() {
-                if (currentMode === 'heatmap' && heatmapLayer) {
-                    const radius = parseInt(document.getElementById('heat-radius')?.value) || 25;
-                    const blur = parseInt(document.getElementById('heat-blur')?.value) || 15;
-                    const intensity = parseFloat(document.getElementById('heat-intensity')?.value) || 1;
-                    
-                    heatmapLayer.setOptions({
-                        radius: radius,
-                        blur: blur,
-                        max: intensity
-                    });
-                }
-            }
-
-            // Initialize controls
-            addHeatmapControls();
-
-            // Don't set default dates - show all data initially
-            console.log('Map initialized successfully!');
+        // Slider event listeners
+        document.getElementById('heat-radius').addEventListener('input', function(e) {
+            document.getElementById('radius-value').textContent = e.target.value;
+            updateHeatmap();
         });
+
+        document.getElementById('heat-blur').addEventListener('input', function(e) {
+            document.getElementById('blur-value').textContent = e.target.value;
+            updateHeatmap();
+        });
+
+        document.getElementById('heat-intensity').addEventListener('input', function(e) {
+            document.getElementById('intensity-value').textContent = e.target.value;
+            updateHeatmap();
+        });
+
+        // Filter event listeners
+        document.getElementById('period-filter').addEventListener('change', loadHeatmapData);
+        document.getElementById('crime-type-filter').addEventListener('change', loadHeatmapData);
+        document.getElementById('barangay-filter').addEventListener('change', loadHeatmapData);
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', loadHeatmapData);
     </script>
+
+    <style>
+        .map-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: var(--primary-bg-1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            color: var(--text-secondary-1);
+        }
+        .map-loading i { margin-right: 0.5rem; }
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary-1);
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary-1);
+        }
+    </style>
 </body>
 </html>
