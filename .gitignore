@@ -1,6 +1,7 @@
 # Environment and Database
 .env
 db.sql
+new_db.sql
 .htaccess
 
 # Dependencies
