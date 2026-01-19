@@ -191,14 +191,14 @@ try {
         $otp_stmt->execute();
         $otp_stmt->close();
 
-        // Send OTP email
+        // Send OTP email for 2FA login verification
         require_once __DIR__ . '/../../utils/mailer.php';
 
         try {
             $mailer = new Mailer();
-            $mailer->sendOTP($user['email'], $user['full_name'], $otp);
+            $mailer->sendLoginOTP($user['email'], $user['full_name'], $otp);
         } catch (Exception $e) {
-            error_log("Failed to send OTP email: " . $e->getMessage());
+            error_log("Failed to send login OTP email: " . $e->getMessage());
         }
 
         // Store user data in session for OTP verification
