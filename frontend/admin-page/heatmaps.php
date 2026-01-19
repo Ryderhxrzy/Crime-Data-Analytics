@@ -4,7 +4,7 @@ require_once '../../api/middleware/auth.php';
 require_once '../../api/config.php';
 
 // Get crime categories for filter dropdown
-$categoriesQuery = "SELECT id, category_code, category_name, color, icon FROM crime_department_crime_categories WHERE is_active = 1 ORDER BY category_name";
+$categoriesQuery = "SELECT id, category_code, category_name, color_code as color, icon FROM crime_department_crime_categories WHERE is_active = 1 ORDER BY category_name";
 $categoriesResult = $mysqli->query($categoriesQuery);
 $categories = [];
 while ($row = $categoriesResult->fetch_assoc()) {
@@ -12,7 +12,7 @@ while ($row = $categoriesResult->fetch_assoc()) {
 }
 
 // Get barangays for filter
-$barangaysQuery = "SELECT id, barangay_name, district FROM crime_department_barangays WHERE is_active = 1 ORDER BY barangay_name";
+$barangaysQuery = "SELECT id, barangay_name, city_municipality as district FROM crime_department_barangays WHERE is_active = 1 ORDER BY barangay_name";
 $barangaysResult = $mysqli->query($barangaysQuery);
 $barangays = [];
 while ($row = $barangaysResult->fetch_assoc()) {
