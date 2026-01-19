@@ -22,7 +22,7 @@ $monthlyTrend = $lastMonthIncidents > 0 ? round((($thisMonthIncidents - $lastMon
 
 // Get crime rate by barangay (per 1000 population)
 $barangayRatesQuery = "
-    SELECT b.barangay_name, b.district, b.population, COUNT(ci.id) as incidents,
+    SELECT b.barangay_name, b.city_municipality as district, b.population, COUNT(ci.id) as incidents,
            ROUND(COUNT(ci.id) * 1000 / NULLIF(b.population, 0), 2) as crime_rate
     FROM crime_department_barangays b
     LEFT JOIN crime_department_crime_incidents ci ON b.id = ci.barangay_id
@@ -56,7 +56,7 @@ while ($row = $monthlyRatesResult->fetch_assoc()) {
 
 // Get crime rates by category
 $categoryRatesQuery = "
-    SELECT cc.category_name, cc.color, COUNT(ci.id) as count
+    SELECT cc.category_name, cc.color_code as color, COUNT(ci.id) as count
     FROM crime_department_crime_categories cc
     LEFT JOIN crime_department_crime_incidents ci ON cc.id = ci.crime_category_id
     WHERE cc.is_active = 1
