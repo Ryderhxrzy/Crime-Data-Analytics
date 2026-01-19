@@ -51,15 +51,13 @@ function isSessionExpired() {
  * Check for session hijacking attempts
  */
 function isSessionHijacked() {
-    $current_ip = $_SERVER['REMOTE_ADDR'] ?? '';
     $current_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
-    // Check IP address
-    if (isset($_SESSION['user_ip']) && $_SESSION['user_ip'] !== $current_ip) {
-        return true;
-    }
+    // Note: IP check removed because mobile networks frequently change IP addresses
+    // as users switch between cell towers, WiFi, or due to carrier NAT.
+    // This was causing "Security violation detected" errors on mobile devices.
 
-    // Check user agent
+    // Check user agent (more reliable than IP for mobile)
     if (isset($_SESSION['user_agent']) && $_SESSION['user_agent'] !== $current_agent) {
         return true;
     }
