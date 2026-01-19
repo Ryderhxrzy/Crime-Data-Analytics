@@ -67,9 +67,9 @@ $latestQuery = "
         ci.clearance_status,
         cc.category_name,
         cc.icon as category_icon,
-        cc.color as category_color,
+        cc.color_code as category_color,
         b.barangay_name,
-        b.district
+        b.city_municipality as district
     FROM crime_department_crime_incidents ci
     LEFT JOIN crime_department_crime_categories cc ON ci.crime_category_id = cc.id
     LEFT JOIN crime_department_barangays b ON ci.barangay_id = b.id
