@@ -64,7 +64,7 @@ while ($row = $barangaysResult->fetch_assoc()) {
                 <p>Interactive crime map showing reported incidents across Quezon City. Click on markers to view detailed information about each crime incident including type, date, time, barangay, and case status.</p>
             </div>
 
-            <div class="sub-container">
+            <div class="sub-container" style="padding-bottom: 1.5rem">
                 <div class="page-content">
                     <div class="dashboard-grid">
                         <!-- Total Crimes Card -->
@@ -212,6 +212,29 @@ while ($row = $barangaysResult->fetch_assoc()) {
                         </div>
                     </div>
 
+                    <!-- Heatmap Density Controls (shown only when heatmap mode is selected) -->
+                    <div id="heatmap-controls" class="heatmap-controls-panel" style="display: none;">
+                        <h4 class="heatmap-controls-title"><i class="fas fa-sliders-h"></i> Heatmap Density Settings</h4>
+                        <div class="heatmap-slider-group">
+                            <div class="slider-item">
+                                <label>Radius: <span class="slider-value" id="radius-value">25</span>px</label>
+                                <input type="range" id="heat-radius" min="10" max="60" value="25">
+                            </div>
+                            <div class="slider-item">
+                                <label>Blur: <span class="slider-value" id="blur-value">15</span>px</label>
+                                <input type="range" id="heat-blur" min="5" max="40" value="15">
+                            </div>
+                            <div class="slider-item">
+                                <label>Intensity: <span class="slider-value" id="intensity-value">1.0</span></label>
+                                <input type="range" id="heat-intensity" min="0.1" max="3" step="0.1" value="1">
+                            </div>
+                            <div class="slider-item">
+                                <label>Max Zoom: <span class="slider-value" id="maxzoom-value">18</span></label>
+                                <input type="range" id="heat-maxzoom" min="10" max="18" value="18">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Loading indicator -->
                     <div id="map-loading" class="map-loading" style="display: none;">
                         <i class="fas fa-spinner fa-spin"></i> Loading crime data...
@@ -220,8 +243,8 @@ while ($row = $barangaysResult->fetch_assoc()) {
                     <!-- Interactive Map -->
                     <div id="crime-map"></div>
 
-                    <!-- Legend -->
-                    <div class="legend">
+                    <!-- Legend for Markers/Clusters -->
+                    <div class="legend" id="categories-legend">
                         <div class="legend-header">
                             <h3>
                                 <i class="fas fa-map-marked-alt"></i>
@@ -235,6 +258,37 @@ while ($row = $barangaysResult->fetch_assoc()) {
                                     <span class="legend-label"><?php echo htmlspecialchars($cat['category_name']); ?></span>
                                 </div>
                             <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Legend for Heatmap (hidden by default) -->
+                    <div class="legend heatmap-legend" id="heatmap-legend" style="display: none;">
+                        <div class="legend-header">
+                            <h3>
+                                <i class="fas fa-fire"></i>
+                                Crime Density
+                            </h3>
+                        </div>
+                        <div class="density-legend-content">
+                            <div class="density-labels">
+                                <span class="density-label low">Low</span>
+                                <span class="density-label high">High</span>
+                            </div>
+                            <div class="density-gradient"></div>
+                            <div class="density-description">
+                                <div class="density-item">
+                                    <span class="density-dot" style="background: #22c55e;"></span>
+                                    <span>Low incident density</span>
+                                </div>
+                                <div class="density-item">
+                                    <span class="density-dot" style="background: #eab308;"></span>
+                                    <span>Medium incident density</span>
+                                </div>
+                                <div class="density-item">
+                                    <span class="density-dot" style="background: #dc2626;"></span>
+                                    <span>High incident density (Hotspot)</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -284,18 +338,31 @@ while ($row = $barangaysResult->fetch_assoc()) {
 
         async function loadQCBoundary() {
             try {
-                const response = await fetch('../../qc_boundary.geojson');
+                const response = await fetch('../../qc_map.geojson');
                 const geojsonData = await response.json();
 
                 if (geojsonData.features && geojsonData.features.length > 0) {
-                    // Add the QC boundary layer with fill color
+                    const qcFeature = geojsonData.features[0];
+
+                    // Create mask layer to dim areas outside QC
+                    const outerBounds = [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]];
+                    const qcCoords = qcFeature.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
+
+                    qcMaskLayer = L.polygon([outerBounds, qcCoords], {
+                        color: 'transparent',
+                        fillColor: '#111827',
+                        fillOpacity: 0.7,
+                        interactive: false
+                    }).addTo(map);
+
+                    // Add the QC boundary layer with styled border
                     qcBoundaryLayer = L.geoJSON(geojsonData, {
                         style: {
                             color: '#4c8a89',
                             weight: 3,
                             opacity: 1,
-                            fillColor: '#4c8a89',
-                            fillOpacity: 0.15
+                            fillColor: 'transparent',
+                            fillOpacity: 0
                         },
                         onEachFeature: function(feature, layer) {
                             layer.bindPopup('<strong>Quezon City</strong><br>Crime Data Analytics Coverage Area');
@@ -413,27 +480,41 @@ while ($row = $barangaysResult->fetch_assoc()) {
 
             if (data.length === 0) return;
 
+            // Get settings from sliders
+            const radius = parseInt(document.getElementById('heat-radius').value);
+            const blur = parseInt(document.getElementById('heat-blur').value);
+            const intensity = parseFloat(document.getElementById('heat-intensity').value);
+            const maxZoom = parseInt(document.getElementById('heat-maxzoom').value);
+
             const heatPoints = data.map(crime => {
-                let intensity = 0.5;
-                if (crime.severity === 'critical') intensity = 1.0;
-                else if (crime.severity === 'high') intensity = 0.8;
-                else if (crime.severity === 'medium') intensity = 0.6;
-                return [crime.lat, crime.lng, intensity];
+                let weight = 0.5;
+                if (crime.severity === 'critical') weight = 1.0;
+                else if (crime.severity === 'high') weight = 0.8;
+                else if (crime.severity === 'medium') weight = 0.6;
+                return [crime.lat, crime.lng, weight * intensity];
             });
 
             heatLayer = L.heatLayer(heatPoints, {
-                radius: 30,
-                blur: 20,
-                maxZoom: 15,
+                radius: radius,
+                blur: blur,
+                maxZoom: maxZoom,
+                minOpacity: 0.4,
                 gradient: {
                     0.0: '#22c55e',
-                    0.3: '#84cc16',
-                    0.5: '#eab308',
-                    0.7: '#f97316',
-                    0.85: '#ef4444',
+                    0.25: '#84cc16',
+                    0.4: '#eab308',
+                    0.6: '#f97316',
+                    0.8: '#ef4444',
                     1.0: '#dc2626'
                 }
             }).addTo(map);
+        }
+
+        // Update heatmap when settings change
+        function updateHeatmapSettings() {
+            if (document.getElementById('visualization-mode').value === 'heatmap' && crimeData.length > 0) {
+                renderHeatmap(crimeData);
+            }
         }
 
         // Render clusters
@@ -556,7 +637,45 @@ while ($row = $barangaysResult->fetch_assoc()) {
         document.getElementById('crime-type-filter').addEventListener('change', loadCrimeData);
         document.getElementById('status-filter').addEventListener('change', loadCrimeData);
         document.getElementById('barangay-filter').addEventListener('change', loadCrimeData);
-        document.getElementById('visualization-mode').addEventListener('change', loadCrimeData);
+
+        // Visualization mode change - show/hide heatmap controls and legends
+        document.getElementById('visualization-mode').addEventListener('change', function() {
+            const heatmapControls = document.getElementById('heatmap-controls');
+            const categoriesLegend = document.getElementById('categories-legend');
+            const heatmapLegend = document.getElementById('heatmap-legend');
+
+            if (this.value === 'heatmap') {
+                heatmapControls.style.display = 'block';
+                categoriesLegend.style.display = 'none';
+                heatmapLegend.style.display = 'block';
+            } else {
+                heatmapControls.style.display = 'none';
+                categoriesLegend.style.display = 'block';
+                heatmapLegend.style.display = 'none';
+            }
+            loadCrimeData();
+        });
+
+        // Heatmap slider event listeners
+        document.getElementById('heat-radius').addEventListener('input', function(e) {
+            document.getElementById('radius-value').textContent = e.target.value;
+            updateHeatmapSettings();
+        });
+
+        document.getElementById('heat-blur').addEventListener('input', function(e) {
+            document.getElementById('blur-value').textContent = e.target.value;
+            updateHeatmapSettings();
+        });
+
+        document.getElementById('heat-intensity').addEventListener('input', function(e) {
+            document.getElementById('intensity-value').textContent = e.target.value;
+            updateHeatmapSettings();
+        });
+
+        document.getElementById('heat-maxzoom').addEventListener('input', function(e) {
+            document.getElementById('maxzoom-value').textContent = e.target.value;
+            updateHeatmapSettings();
+        });
 
         // Initial load
         document.addEventListener('DOMContentLoaded', loadCrimeData);
@@ -578,11 +697,145 @@ while ($row = $barangaysResult->fetch_assoc()) {
             margin-right: 0.5rem;
         }
 
+        /* Heatmap Controls Panel */
+        .heatmap-controls-panel {
+            background: var(--primary-bg-1);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color-1);
+        }
+
+        .heatmap-controls-title {
+            margin: 0 0 1rem 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary-1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heatmap-controls-title i {
+            color: #4c8a89;
+        }
+
+        .heatmap-slider-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .slider-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .slider-item label {
+            font-size: 0.875rem;
+            color: var(--text-secondary-1);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .slider-value {
+            font-weight: 600;
+            color: #4c8a89;
+        }
+
+        .slider-item input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color-1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider-item input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4c8a89;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider-item input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4c8a89;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Heatmap Density Legend */
+        .heatmap-legend .density-legend-content {
+            padding: 0.5rem 0;
+        }
+
+        .density-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .density-label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+        }
+
+        .density-label.low {
+            color: #22c55e;
+        }
+
+        .density-label.high {
+            color: #dc2626;
+        }
+
+        .density-gradient {
+            height: 16px;
+            border-radius: 8px;
+            background: linear-gradient(to right, #22c55e, #84cc16, #eab308, #f97316, #ef4444, #dc2626);
+            margin-bottom: 1rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .density-description {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .density-item {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-size: 0.8125rem;
+            color: var(--text-secondary-1);
+        }
+
+        .density-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
         .incidents-section {
             background: var(--primary-bg-1);
             border-radius: 12px;
             padding: 1.5rem;
             margin-top: 1.5rem;
+            border: 1px solid var(--border-color-1);
         }
 
         .section-header {
@@ -590,6 +843,8 @@ while ($row = $barangaysResult->fetch_assoc()) {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color-1);
         }
 
         .section-title {
@@ -601,6 +856,9 @@ while ($row = $barangaysResult->fetch_assoc()) {
         .incidents-count {
             font-size: 0.875rem;
             color: var(--text-secondary-1);
+            background: var(--secondary-bg-1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
         }
 
         .incidents-list {
@@ -615,15 +873,17 @@ while ($row = $barangaysResult->fetch_assoc()) {
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 0.75rem;
+            padding: 0.875rem;
             background: var(--secondary-bg-1);
             border-radius: 8px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-color-1);
         }
 
         .incident-item:hover {
             background: var(--tertiary-bg-1);
+            border-color: var(--primary-color-1);
         }
 
         .incident-icon {
@@ -656,6 +916,7 @@ while ($row = $barangaysResult->fetch_assoc()) {
             font-size: 0.75rem;
             color: var(--text-secondary-1);
             margin-top: 0.25rem;
+            flex-wrap: wrap;
         }
 
         .incident-meta span {
@@ -687,6 +948,117 @@ while ($row = $barangaysResult->fetch_assoc()) {
         .incident-status.status-closed {
             background: #d1fae5;
             color: #065f46;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .incidents-section {
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .incidents-list {
+                max-height: 350px;
+                gap: 0.5rem;
+            }
+
+            .incident-item {
+                flex-wrap: wrap;
+                padding: 0.75rem;
+                gap: 0.75rem;
+            }
+
+            .incident-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .incident-details {
+                flex: 1 1 calc(100% - 100px);
+            }
+
+            .incident-title {
+                font-size: 0.875rem;
+                white-space: normal;
+                line-height: 1.3;
+            }
+
+            .incident-meta {
+                gap: 0.5rem;
+            }
+
+            .incident-status {
+                margin-top: 0.5rem;
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Heatmap controls mobile */
+            .heatmap-controls-panel {
+                padding: 1rem;
+            }
+
+            .heatmap-slider-group {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            /* Legend mobile */
+            .density-gradient {
+                height: 12px;
+            }
+
+            .density-description {
+                gap: 0.375rem;
+            }
+
+            .density-item {
+                font-size: 0.75rem;
+            }
+
+            .density-dot {
+                width: 10px;
+                height: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .incident-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .incident-icon {
+                align-self: flex-start;
+            }
+
+            .incident-details {
+                width: 100%;
+            }
+
+            .incident-meta {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .incident-status {
+                align-self: flex-start;
+                width: auto;
+            }
+
+            .heatmap-slider-group {
+                grid-template-columns: 1fr;
+            }
         }
 
         .no-data {
