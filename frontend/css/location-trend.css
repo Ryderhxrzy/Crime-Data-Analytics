@@ -2,6 +2,190 @@
    LOCATION-BASED TRENDS - PAGE STYLES
    =================================== */
 
+/* Dashboard Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Stats Cards */
+.stat-card {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color-1);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Only add margin when there's a footer after the header */
+.stat-card:has(.stat-card-footer) .stat-card-header {
+    margin-bottom: 1rem;
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-card-icon.primary {
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+.stat-card-icon.danger {
+    background: var(--error-bg);
+    color: var(--error-color);
+}
+
+.stat-card-icon.success {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+.stat-card-icon.warning {
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+}
+
+.stat-card-info {
+    flex: 1;
+    text-align: right;
+}
+
+.stat-card-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    line-height: 1.2;
+}
+
+.stat-card-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color-1);
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+}
+
+/* Barangay List Styles */
+.barangay-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.barangay-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-color-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.barangay-item:hover {
+    background: var(--card-bg-1);
+    border-color: var(--primary-color-1);
+    box-shadow: var(--shadow-sm);
+}
+
+.barangay-position {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    background: var(--primary-color-1);
+    color: white;
+    flex-shrink: 0;
+}
+
+.barangay-item:nth-child(1) .barangay-position {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+
+.barangay-item:nth-child(2) .barangay-position {
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+}
+
+.barangay-item:nth-child(3) .barangay-position {
+    background: linear-gradient(135deg, #cd7f32, #8b5a2b);
+}
+
+.barangay-details {
+    flex: 1;
+}
+
+.barangay-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.25rem;
+}
+
+.barangay-location {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.barangay-location i {
+    font-size: 0.75rem;
+    color: var(--primary-color-1);
+}
+
+.barangay-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--error-color);
+}
+
+/* No Data Message */
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary-1);
+    font-size: 0.9375rem;
+}
+
 /* Chart Grid Layouts */
 .chart-grid-single {
     display: grid;
@@ -321,6 +505,17 @@
 }
 
 @media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-card-value {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 768px) {
     .chart-canvas-container {
         height: 300px;
     }
@@ -367,5 +562,23 @@
 
     .ranking-count {
         font-size: 1.125rem;
+    }
+
+    .barangay-item {
+        padding: 0.875rem;
+    }
+
+    .barangay-position {
+        width: 36px;
+        height: 36px;
+        font-size: 0.875rem;
+    }
+
+    .barangay-name {
+        font-size: 0.9375rem;
+    }
+
+    .barangay-count {
+        font-size: 1.25rem;
     }
 }

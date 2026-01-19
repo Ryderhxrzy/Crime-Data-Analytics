@@ -2,6 +2,102 @@
    CRIME TYPE TRENDS - PAGE STYLES
    =================================== */
 
+/* Dashboard Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Stats Cards */
+.stat-card {
+    background: var(--card-bg-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color-1);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Only add margin when there's a footer after the header */
+.stat-card:has(.stat-card-footer) .stat-card-header {
+    margin-bottom: 1rem;
+}
+
+.stat-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-card-icon.primary {
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+.stat-card-icon.danger {
+    background: var(--error-bg);
+    color: var(--error-color);
+}
+
+.stat-card-icon.success {
+    background: var(--success-bg);
+    color: var(--success-color);
+}
+
+.stat-card-icon.warning {
+    background: rgba(251, 191, 36, 0.1);
+    color: #f59e0b;
+}
+
+.stat-card-info {
+    flex: 1;
+    text-align: right;
+}
+
+.stat-card-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color-1);
+    line-height: 1.2;
+}
+
+.stat-card-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color-1);
+    font-size: 0.875rem;
+    color: var(--text-secondary-1);
+}
+
 /* Chart Grid Layouts */
 .chart-grid-single {
     display: grid;
@@ -283,6 +379,160 @@
     line-height: 1.5;
 }
 
+/* Crime Types List (for All Crime Categories section) */
+.crime-types-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for crime types list */
+.crime-types-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.crime-types-list::-webkit-scrollbar-track {
+    background: var(--bg-color-1);
+    border-radius: 3px;
+}
+
+.crime-types-list::-webkit-scrollbar-thumb {
+    background: var(--border-color-1);
+    border-radius: 3px;
+}
+
+.crime-types-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color-1);
+}
+
+.crime-type-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-color-1);
+    border: 1px solid var(--border-color-1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.crime-type-item:hover {
+    border-color: var(--primary-color-1);
+    box-shadow: var(--shadow-sm);
+}
+
+.crime-rank {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: rgba(76, 138, 137, 0.1);
+    color: var(--primary-color-1);
+}
+
+.crime-rank.rank-1,
+.crime-type-item:nth-child(1) .crime-rank {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+}
+
+.crime-rank.rank-2,
+.crime-type-item:nth-child(2) .crime-rank {
+    background: linear-gradient(135deg, #d1d5db, #9ca3af);
+    color: white;
+}
+
+.crime-rank.rank-3,
+.crime-type-item:nth-child(3) .crime-rank {
+    background: linear-gradient(135deg, #cd7f32, #8b5a2b);
+    color: white;
+}
+
+/* Severity Badges */
+.severity-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+}
+
+.severity-badge.severity-critical {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.severity-badge.severity-high {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.severity-badge.severity-medium {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.severity-badge.severity-low {
+    background: #d1fae5;
+    color: #059669;
+}
+
+/* No Data Message */
+.no-data {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary-1);
+    font-size: 0.9375rem;
+}
+
+.crime-type-item .crime-type-info {
+    flex: 1;
+}
+
+.crime-type-item .crime-type-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-1);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+}
+
+.crime-type-item .crime-type-description {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+}
+
+.crime-type-item .crime-type-stats {
+    text-align: right;
+    display: block;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.crime-type-item .crime-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color-1);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.crime-type-item .crime-percentage {
+    font-size: 0.8125rem;
+    color: var(--text-secondary-1);
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .chart-grid-double {
@@ -291,6 +541,17 @@
 
     .crime-type-stats {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-card-value {
+        font-size: 1.75rem;
     }
 }
 
@@ -371,5 +632,19 @@
 
     .threat-content p {
         font-size: 0.8125rem;
+    }
+
+    .crime-type-item {
+        padding: 0.875rem;
+    }
+
+    .crime-rank {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .crime-type-item .crime-count {
+        font-size: 1.25rem;
     }
 }

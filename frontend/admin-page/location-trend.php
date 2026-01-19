@@ -257,8 +257,5 @@ $peakDistrict = !empty($districtData) ? $districtData[0] : ['district' => 'N/A',
         observer.observe(document.documentElement, { attributes: true });
     </script>
 
-    <style>
-        .no-data { text-align: center; padding: 2rem; color: var(--text-secondary-1); }
-    </style>
 </body>
 </html>
