@@ -4,7 +4,7 @@ require_once '../../api/middleware/auth.php';
 require_once '../../api/config.php';
 
 // Get crime categories for filter dropdown
-$categoriesQuery = "SELECT id, category_code, category_name, color, icon FROM crime_department_crime_categories WHERE is_active = 1 ORDER BY category_name";
+$categoriesQuery = "SELECT id, category_code, category_name, color_code as color, icon FROM crime_department_crime_categories WHERE is_active = 1 ORDER BY category_name";
 $categoriesResult = $mysqli->query($categoriesQuery);
 $categories = [];
 while ($row = $categoriesResult->fetch_assoc()) {
@@ -12,7 +12,7 @@ while ($row = $categoriesResult->fetch_assoc()) {
 }
 
 // Get barangays for filter
-$barangaysQuery = "SELECT id, barangay_name, district FROM crime_department_barangays WHERE is_active = 1 ORDER BY barangay_name";
+$barangaysQuery = "SELECT id, barangay_name, city_municipality as district FROM crime_department_barangays WHERE is_active = 1 ORDER BY barangay_name";
 $barangaysResult = $mysqli->query($barangaysQuery);
 $barangays = [];
 while ($row = $barangaysResult->fetch_assoc()) {
@@ -264,35 +264,12 @@ while ($row = $barangaysResult->fetch_assoc()) {
             return ['id' => $cat['id'], 'color' => $cat['color'] ?? '#6b7280'];
         }, $categories), 'color', 'id')); ?>;
 
-        // Quezon City boundary polygon
-        const quezonCityPolygon = [
-            [14.7650, 121.0000], [14.7600, 121.0100], [14.7550, 121.0200],
-            [14.7500, 121.0300], [14.7450, 121.0400], [14.7400, 121.0500],
-            [14.7300, 121.0600], [14.7200, 121.0700], [14.7100, 121.0800],
-            [14.7000, 121.0900], [14.6900, 121.1000], [14.6700, 121.1050],
-            [14.6500, 121.1000], [14.6300, 121.0900], [14.6100, 121.0800],
-            [14.5950, 121.0700], [14.5900, 121.0600], [14.5850, 121.0500],
-            [14.5900, 121.0400], [14.5950, 121.0300], [14.6000, 121.0200],
-            [14.6050, 121.0100], [14.6100, 121.0000], [14.6150, 120.9950],
-            [14.6300, 120.9900], [14.6500, 120.9850], [14.6700, 120.9900],
-            [14.6900, 120.9950], [14.7100, 121.0000], [14.7300, 120.9950],
-            [14.7500, 120.9900], [14.7650, 121.0000]
-        ];
-
-        // Strict bounds for Quezon City
-        const strictBounds = L.latLngBounds(
-            [14.5800, 120.9800],
-            [14.7700, 121.1100]
-        );
-
         // Initialize map
         const map = L.map('crime-map', {
             center: [14.6760, 121.0437],
             zoom: 12,
             minZoom: 11,
-            maxZoom: 18,
-            maxBounds: strictBounds,
-            maxBoundsViscosity: 1.0
+            maxZoom: 18
         });
 
         // Add OpenStreetMap tiles
@@ -301,23 +278,44 @@ while ($row = $barangaysResult->fetch_assoc()) {
             maxZoom: 18
         }).addTo(map);
 
-        // Create mask layer
-        const outerBounds = [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]];
-        L.polygon([outerBounds, quezonCityPolygon], {
-            color: 'transparent',
-            fillColor: '#111827',
-            fillOpacity: 0.85,
-            interactive: false
-        }).addTo(map);
+        // Load QC boundary from GeoJSON file
+        let qcBoundaryLayer = null;
+        let qcMaskLayer = null;
 
-        // Add QC boundary
-        L.polygon(quezonCityPolygon, {
-            color: '#4c8a89',
-            weight: 4,
-            opacity: 1,
-            fillColor: 'transparent',
-            fillOpacity: 0
-        }).addTo(map).bindPopup('<strong>Quezon City</strong><br>Crime Data Analytics Coverage Area');
+        async function loadQCBoundary() {
+            try {
+                const response = await fetch('../../qc_boundary.geojson');
+                const geojsonData = await response.json();
+
+                if (geojsonData.features && geojsonData.features.length > 0) {
+                    // Add the QC boundary layer with fill color
+                    qcBoundaryLayer = L.geoJSON(geojsonData, {
+                        style: {
+                            color: '#4c8a89',
+                            weight: 3,
+                            opacity: 1,
+                            fillColor: '#4c8a89',
+                            fillOpacity: 0.15
+                        },
+                        onEachFeature: function(feature, layer) {
+                            layer.bindPopup('<strong>Quezon City</strong><br>Crime Data Analytics Coverage Area');
+                        }
+                    }).addTo(map);
+
+                    // Get bounds from the GeoJSON and set map constraints
+                    const bounds = qcBoundaryLayer.getBounds();
+                    map.setMaxBounds(bounds.pad(0.1));
+                    map.fitBounds(bounds);
+                } else {
+                    console.warn('QC boundary GeoJSON is empty, using default view');
+                }
+            } catch (error) {
+                console.error('Failed to load QC boundary:', error);
+            }
+        }
+
+        // Load boundary on page load
+        loadQCBoundary();
 
         // Global variables
         let crimeData = [];
