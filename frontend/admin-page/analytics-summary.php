@@ -13,7 +13,7 @@ $categoriesQuery = "
     SELECT
         cc.id,
         cc.category_name,
-        cc.color,
+        cc.color_code as color,
         cc.icon,
         COUNT(ci.id) as count
     FROM crime_department_crime_categories cc
@@ -33,7 +33,7 @@ $barangaysQuery = "
     SELECT
         b.id,
         b.barangay_name,
-        b.district,
+        b.city_municipality as district,
         COUNT(ci.id) as count
     FROM crime_department_barangays b
     LEFT JOIN crime_department_crime_incidents ci ON b.id = ci.barangay_id
@@ -105,13 +105,13 @@ $top3Categories = array_slice($categories, 0, 3);
 // Get district summary for risk areas
 $districtQuery = "
     SELECT
-        b.district,
+        b.city_municipality as district,
         COUNT(ci.id) as count,
         COUNT(CASE WHEN ci.incident_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as recent_count
     FROM crime_department_barangays b
     LEFT JOIN crime_department_crime_incidents ci ON b.id = ci.barangay_id
-    WHERE b.is_active = 1 AND b.district IS NOT NULL
-    GROUP BY b.district
+    WHERE b.is_active = 1 AND b.city_municipality IS NOT NULL
+    GROUP BY b.city_municipality
     HAVING count > 0
     ORDER BY count DESC
     LIMIT 6
