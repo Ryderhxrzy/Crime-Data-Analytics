@@ -88,6 +88,32 @@ class Mailer {
     }
 
     /**
+     * Send OTP email for 2FA login verification
+     */
+    public function sendLoginOTP($email, $fullName, $otp) {
+        try {
+            $this->mail->clearAddresses();
+            $this->mail->addAddress($email, $fullName);
+
+            $this->mail->Subject = 'Login Verification OTP - AlerTara QC Crime Data Analytics';
+
+            $this->mail->Body = $this->getLoginOTPEmailTemplate($fullName, $otp);
+            $this->mail->AltBody = "Hello {$fullName},\n\n"
+                . "Your login verification OTP code is: {$otp}\n\n"
+                . "This code will expire in 2 minutes.\n\n"
+                . "If you did not attempt to login, please secure your account immediately.\n\n"
+                . "Best regards,\nAlerTara QC Team";
+
+            $this->mail->send();
+            return true;
+
+        } catch (Exception $e) {
+            error_log("Failed to send login OTP email: " . $this->mail->ErrorInfo);
+            throw new Exception("Failed to send email: " . $this->mail->ErrorInfo);
+        }
+    }
+
+    /**
      * Send password reset link (when OTP is verified)
      */
     public function sendResetLink($email, $fullName, $resetToken) {
@@ -165,6 +191,76 @@ class Mailer {
                             </p>
                             <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 1.5;">
                                 If you did not request a password reset, please ignore this email or contact your administrator if you have concerns.
+                            </p>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
+                            <p style="margin: 0; color: #999999; font-size: 12px;">
+                                This is an automated message from AlerTara QC Crime Data Analytics.<br>
+                                Please do not reply to this email.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
+    }
+
+    /**
+     * Login OTP Email HTML Template (for 2FA)
+     */
+    private function getLoginOTPEmailTemplate($fullName, $otp) {
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Verification OTP</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #4c8a89; padding: 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px;">AlerTara QC</h1>
+                            <p style="margin: 5px 0 0 0; color: #ffffff; font-size: 14px;">Crime Data Analytics</p>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 20px;">Login Verification</h2>
+                            <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.5;">
+                                Hello <strong>{$fullName}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.5;">
+                                A login attempt was made to your account. Use the following One-Time Password (OTP) to complete your login:
+                            </p>
+                            <!-- OTP Code -->
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <div style="background-color: #f8f9fa; border: 2px dashed #4c8a89; border-radius: 8px; padding: 20px; display: inline-block;">
+                                            <span style="font-size: 36px; font-weight: bold; color: #4c8a89; letter-spacing: 8px;">{$otp}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin: 20px 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                <strong>Important:</strong> This OTP will expire in <strong>2 minutes</strong>.
+                            </p>
+                            <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 1.5;">
+                                If you did not attempt to login, please secure your account immediately by changing your password.
                             </p>
                         </td>
                     </tr>
