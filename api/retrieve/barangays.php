@@ -35,13 +35,13 @@ try {
                 break;
         }
 
-        $districtCondition = $district ? "AND b.district = '" . $mysqli->real_escape_string($district) . "'" : '';
+        $districtCondition = $district ? "AND b.city_municipality = '" . $mysqli->real_escape_string($district) . "'" : '';
 
         $query = "
             SELECT
                 b.id,
                 b.barangay_name,
-                b.district,
+                b.city_municipality as district,
                 b.latitude,
                 b.longitude,
                 b.population,
@@ -55,19 +55,19 @@ try {
             ORDER BY total_incidents DESC, b.barangay_name ASC
         ";
     } else {
-        $districtCondition = $district ? "AND district = '" . $mysqli->real_escape_string($district) . "'" : '';
+        $districtCondition = $district ? "AND city_municipality = '" . $mysqli->real_escape_string($district) . "'" : '';
 
         $query = "
             SELECT
                 id,
                 barangay_name,
-                district,
+                city_municipality as district,
                 latitude,
                 longitude,
                 population
             FROM crime_department_barangays
             WHERE is_active = 1 $districtCondition
-            ORDER BY district, barangay_name
+            ORDER BY city_municipality, barangay_name
         ";
     }
 
@@ -83,14 +83,14 @@ try {
     if ($include_stats) {
         $districtQuery = "
             SELECT
-                b.district,
+                b.city_municipality as district,
                 COUNT(DISTINCT b.id) as barangay_count,
                 COUNT(ci.id) as total_incidents
             FROM crime_department_barangays b
             LEFT JOIN crime_department_crime_incidents ci ON b.id = ci.barangay_id $dateCondition
             WHERE b.is_active = 1
-            GROUP BY b.district
-            ORDER BY b.district
+            GROUP BY b.city_municipality
+            ORDER BY b.city_municipality
         ";
         $districtResult = $mysqli->query($districtQuery);
         while ($row = $districtResult->fetch_assoc()) {
