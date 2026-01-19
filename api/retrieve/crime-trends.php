@@ -100,7 +100,7 @@ try {
                 SELECT
                     b.id as barangay_id,
                     b.barangay_name,
-                    b.district,
+                    b.city_municipality as district,
                     b.latitude,
                     b.longitude,
                     COUNT(ci.id) as total_incidents,
@@ -147,7 +147,7 @@ try {
                     cc.category_code,
                     cc.category_name,
                     cc.icon,
-                    cc.color,
+                    cc.color_code as color,
                     cc.severity_level,
                     COUNT(ci.id) as total_incidents,
                     SUM(CASE WHEN ci.clearance_status = 'cleared' THEN 1 ELSE 0 END) as cleared,
