@@ -21,7 +21,7 @@ $clearanceRate = $totalIncidents > 0 ? round(($clearedCases / $totalIncidents) *
 
 // Get clearance by category
 $categoryQuery = "
-    SELECT cc.category_name, cc.color,
+    SELECT cc.category_name, cc.color_code as color,
            COUNT(ci.id) as total,
            SUM(CASE WHEN ci.clearance_status = 'cleared' THEN 1 ELSE 0 END) as cleared,
            ROUND(SUM(CASE WHEN ci.clearance_status = 'cleared' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ci.id), 0), 1) as rate
@@ -40,7 +40,7 @@ while ($row = $categoryResult->fetch_assoc()) {
 
 // Get clearance by barangay (top 15)
 $barangayQuery = "
-    SELECT b.barangay_name, b.district,
+    SELECT b.barangay_name, b.city_municipality as district,
            COUNT(ci.id) as total,
            SUM(CASE WHEN ci.clearance_status = 'cleared' THEN 1 ELSE 0 END) as cleared,
            ROUND(SUM(CASE WHEN ci.clearance_status = 'cleared' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ci.id), 0), 1) as rate
