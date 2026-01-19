@@ -95,7 +95,7 @@ try {
             cc.category_name,
             cc.category_code,
             cc.icon,
-            cc.color,
+            cc.color_code as color,
             COUNT(ci.id) as count
         FROM crime_department_crime_categories cc
         LEFT JOIN crime_department_crime_incidents ci ON cc.id = ci.crime_category_id $dateCondition $filterConditions
