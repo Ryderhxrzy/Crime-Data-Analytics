@@ -44,7 +44,7 @@ try {
                 cc.category_name,
                 cc.description,
                 cc.icon,
-                cc.color,
+                cc.color_code as color,
                 cc.severity_level,
                 cc.source_system,
                 COUNT(ci.id) as total_incidents,
@@ -64,7 +64,7 @@ try {
                 category_name,
                 description,
                 icon,
-                color,
+                color_code as color,
                 severity_level,
                 source_system
             FROM crime_department_crime_categories
