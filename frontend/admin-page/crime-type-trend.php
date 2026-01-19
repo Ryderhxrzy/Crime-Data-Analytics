@@ -4,7 +4,7 @@ require_once '../../api/config.php';
 
 // Get categories with counts
 $categoriesQuery = "
-    SELECT cc.id, cc.category_code, cc.category_name, cc.icon, cc.color, cc.severity_level,
+    SELECT cc.id, cc.category_code, cc.category_name, cc.icon, cc.color_code as color, cc.severity_level,
            COUNT(ci.id) as count
     FROM crime_department_crime_categories cc
     LEFT JOIN crime_department_crime_incidents ci ON cc.id = ci.crime_category_id
