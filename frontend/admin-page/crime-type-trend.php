@@ -260,13 +260,5 @@ while ($row = $severityResult->fetch_assoc()) {
         observer.observe(document.documentElement, { attributes: true });
     </script>
 
-    <style>
-        .no-data { text-align: center; padding: 2rem; color: var(--text-secondary-1); }
-        .severity-badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; text-transform: uppercase; }
-        .severity-badge.severity-critical { background: #fee2e2; color: #dc2626; }
-        .severity-badge.severity-high { background: #fef3c7; color: #d97706; }
-        .severity-badge.severity-medium { background: #dbeafe; color: #2563eb; }
-        .severity-badge.severity-low { background: #d1fae5; color: #059669; }
-    </style>
 </body>
 </html>
