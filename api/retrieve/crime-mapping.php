@@ -18,21 +18,24 @@ $bounds = $_GET['bounds'] ?? null; // lat1,lng1,lat2,lng2
 $limit = min(500, max(1, (int)($_GET['limit'] ?? 100)));
 
 // Build conditions
-$conditions = ['latitude IS NOT NULL', 'longitude IS NOT NULL'];
+$conditions = ['ci.latitude IS NOT NULL', 'ci.longitude IS NOT NULL'];
 
 // Period filter
 switch ($period) {
     case 'today':
-        $conditions[] = "incident_date = CURDATE()";
+        $conditions[] = "ci.incident_date = CURDATE()";
         break;
     case 'week':
-        $conditions[] = "incident_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        $conditions[] = "ci.incident_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
         break;
     case 'month':
-        $conditions[] = "incident_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+        $conditions[] = "ci.incident_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
         break;
     case 'year':
-        $conditions[] = "incident_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)";
+        $conditions[] = "ci.incident_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)";
+        break;
+    case 'all':
+        // No date filter for 'all'
         break;
 }
 
@@ -83,10 +86,10 @@ try {
             cc.category_name,
             cc.category_code,
             cc.icon as category_icon,
-            cc.color as category_color,
+            cc.color_code as category_color,
             cc.severity_level,
             b.barangay_name,
-            b.district
+            b.city_municipality as district
         FROM crime_department_crime_incidents ci
         LEFT JOIN crime_department_crime_categories cc ON ci.crime_category_id = cc.id
         LEFT JOIN crime_department_barangays b ON ci.barangay_id = b.id
@@ -126,12 +129,12 @@ try {
     // Get heatmap data (aggregated by location)
     $heatmapQuery = "
         SELECT
-            latitude as lat,
-            longitude as lng,
+            ci.latitude as lat,
+            ci.longitude as lng,
             COUNT(*) as weight
         FROM crime_department_crime_incidents ci
         WHERE $whereClause
-        GROUP BY ROUND(latitude, 4), ROUND(longitude, 4)
+        GROUP BY ROUND(ci.latitude, 4), ROUND(ci.longitude, 4)
     ";
 
     $heatmapResult = $mysqli->query($heatmapQuery);
