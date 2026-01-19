@@ -4,7 +4,7 @@ require_once '../../api/config.php';
 
 // Get top barangays by crime count
 $barangaysQuery = "
-    SELECT b.id, b.barangay_name, b.district, COUNT(ci.id) as count
+    SELECT b.id, b.barangay_name, b.city_municipality as district, COUNT(ci.id) as count
     FROM crime_department_barangays b
     LEFT JOIN crime_department_crime_incidents ci ON b.id = ci.barangay_id
     WHERE b.is_active = 1
@@ -21,11 +21,11 @@ while ($row = $barangaysResult->fetch_assoc()) {
 
 // Get district summary
 $districtQuery = "
-    SELECT b.district, COUNT(ci.id) as count
+    SELECT b.city_municipality as district, COUNT(ci.id) as count
     FROM crime_department_barangays b
     LEFT JOIN crime_department_crime_incidents ci ON b.id = ci.barangay_id
-    WHERE b.is_active = 1 AND b.district IS NOT NULL
-    GROUP BY b.district
+    WHERE b.is_active = 1 AND b.city_municipality IS NOT NULL
+    GROUP BY b.city_municipality
     ORDER BY count DESC
 ";
 $districtResult = $mysqli->query($districtQuery);
