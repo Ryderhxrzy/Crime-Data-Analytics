@@ -70,29 +70,13 @@ if ($sidebar_user_id) {
 
             <!-- Crime Data Section -->
             <div class="sidebar-section">
-                <h3 class="sidebar-section-title">Crime Mapping & Heatmaps</h3>
+                <h3 class="sidebar-section-title">Crime Mapping</h3>
                 <ul class="sidebar-menu">
-                    <!-- Crime Mapping & Visualization -->
                     <li class="sidebar-menu-item">
-                        <a href="#" class="sidebar-link sidebar-submenu-toggle">
+                        <a href="crime-mapping.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-mapping.php' ? 'active' : ''; ?>">
                             <i class="fas fa-map-marked-alt"></i>
-                            <span>Mapping</span>
-                            <i class="fas fa-chevron-down submenu-icon"></i>
+                            <span>Crime Mapping</span>
                         </a>
-                        <ul class="sidebar-submenu">
-                            <li>
-                                <a href="crime-mapping.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'crime-mapping.php' ? 'active' : ''; ?>">
-                                    <i class="fas fa-map"></i>
-                                    <span>Crime Mapping</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="heatmaps.php" class="sidebar-link <?php echo basename($_SERVER['PHP_SELF']) == 'heatmaps.php' ? 'active' : ''; ?>">
-                                    <i class="fas fa-fire"></i>
-                                    <span>Heatmaps</span>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
                 </ul>
             </div>
