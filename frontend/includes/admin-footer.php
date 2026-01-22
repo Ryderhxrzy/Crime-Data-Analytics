@@ -20,8 +20,6 @@ if (isset($_SESSION['user']['id']) && isset($mysqli)) {
     }
 }
 ?>
-
-<!-- Admin Footer Component -->
  
 <footer class="admin-footer">
     <div class="footer-bottom">
